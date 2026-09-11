@@ -173,7 +173,7 @@ tls-issue-dns:  ## Выпустить сертификат через DNS reg.ru
 	$(COMPOSE_PROD) run --rm --entrypoint certbot certbot certonly \
 		--authenticator dns-regru \
 		--dns-regru-credentials /run/secrets/regru.ini \
-		--dns-regru-propagation-seconds 300 \
+		--dns-regru-propagation-seconds $${CERTBOT_DNS_PROPAGATION_SECONDS:-900} \
 		-d "$$DOMAIN" $${DOMAIN_ALIAS:+-d "$$DOMAIN_ALIAS"} \
 		--email "$$CERTBOT_EMAIL" --agree-tos --no-eff-email \
 		$$([ "$$CERTBOT_STAGING" = "1" ] && echo --staging) \
@@ -186,6 +186,15 @@ tls-renew:  ## Продлить сертификат вручную (обычн�
 	# Способ подтверждения certbot помнит сам, повторять его не нужно.
 	$(COMPOSE_PROD) run --rm --entrypoint certbot certbot renew
 	$(COMPOSE_PROD) exec nginx nginx -s reload
+
+.PHONY: dns-check
+dns-check:  ## Показать, видна ли проверочная TXT-запись публичным резолверам
+	@set -a && . ./.env && set +a && \
+	for name in "_acme-challenge.$$DOMAIN" $${DOMAIN_ALIAS:+"_acme-challenge.$$DOMAIN_ALIAS"}; do \
+		echo "$$name:"; \
+		curl -s "https://dns.google/resolve?name=$$name&type=TXT" \
+			| grep -o '"data":"[^"]*"' | sed 's/^/  /' || echo "  записи нет"; \
+	done
 
 .PHONY: tls-status
 tls-status:  ## Показать срок действия сертификата
