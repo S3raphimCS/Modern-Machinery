@@ -216,3 +216,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- Проект ---------------------------------------------------------------
+.env
+media/
+staticfiles/
+backups/
+htmlcov/
+coverage.xml
+.coverage
+# Архив с макетами: сами макеты лежат распакованными в design/
+Design.zip

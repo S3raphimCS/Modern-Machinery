@@ -1,0 +1,188 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Новый пуш в ту же ветку отменяет предыдущий прогон: очередь не копится.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.12.12"
+  PYTHON_VERSION: "3.13"
+
+jobs:
+  lint:
+    name: Линтер и формат
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установка uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+
+      - name: Установка зависимостей
+        run: uv sync --all-groups --frozen
+
+      - name: ruff check
+        run: uv run ruff check --output-format=github .
+
+      - name: ruff format
+        run: uv run ruff format --check .
+
+  tests:
+    name: Тесты и покрытие
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        # Версия совпадает с production-профилем compose.
+        image: postgres:17
+        env:
+          POSTGRES_DB: modern_machinery
+          POSTGRES_USER: mm
+          POSTGRES_PASSWORD: mm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mm -d modern_machinery"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings.test
+      # Ключ длиннее 50 символов: короткий не проходит check --deploy.
+          DJANGO_SECRET_KEY: ci-only-key-3f8a1c9e7b2d4056a8f1e3c7d9b5a204e6f8c1a3d5b7e9f0
+      DJANGO_DEBUG: "False"
+      DATABASE_URL: postgres://mm:mm@127.0.0.1:5432/modern_machinery
+      # Redis в тестах не нужен: кэш работает в памяти процесса.
+      CACHE_URL: locmem://
+      CELERY_TASK_ALWAYS_EAGER: "True"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установка uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+
+      - name: Установка зависимостей
+        run: uv sync --all-groups --frozen
+
+      - name: Проверка расширений PostgreSQL
+        run: |
+          PGPASSWORD=mm psql -h 127.0.0.1 -U mm -d modern_machinery \
+            -c "CREATE EXTENSION IF NOT EXISTS pg_trgm; CREATE EXTENSION IF NOT EXISTS unaccent;"
+
+      - name: Тесты с проверкой покрытия
+        run: uv run pytest --cov-report=xml --cov-report=term-missing
+
+      - name: Сохранение отчёта о покрытии
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml
+          if-no-files-found: ignore
+
+  checks:
+    name: Миграции и настройки деплоя
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: modern_machinery
+          POSTGRES_USER: mm
+          POSTGRES_PASSWORD: mm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mm -d modern_machinery"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Ключ длиннее 50 символов: короткий не проходит check --deploy.
+          DJANGO_SECRET_KEY: ci-only-key-3f8a1c9e7b2d4056a8f1e3c7d9b5a204e6f8c1a3d5b7e9f0
+      DATABASE_URL: postgres://mm:mm@127.0.0.1:5432/modern_machinery
+      CACHE_URL: locmem://
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установка uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+
+      - name: Установка зависимостей
+        run: uv sync --all-groups --frozen
+
+      - name: Забытые миграции
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
+        run: uv run python manage.py makemigrations --check --dry-run
+
+      - name: Миграции применяются с нуля
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
+        run: uv run python manage.py migrate --no-input
+
+      - name: Проверка production-настроек
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.production
+          DJANGO_ALLOWED_HOSTS: khv.modernmachinery.ru
+          DJANGO_CSRF_TRUSTED_ORIGINS: https://khv.modernmachinery.ru
+        run: uv run python manage.py check --deploy --fail-level WARNING
+
+  security:
+    name: Безопасность и сборка образа
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установка uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+
+      - name: Установка зависимостей
+        run: uv sync --all-groups --frozen
+
+      - name: Уязвимости в зависимостях
+        run: uv run pip-audit --strict
+
+      - name: Статический анализ безопасности
+        run: uv run bandit -c pyproject.toml -r apps config -q
+
+      - name: Сборка production-образа
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runtime
+          push: false
+          load: true
+          tags: modern-machinery:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Образ запускается и работает не от root
+        run: |
+          user=$(docker run --rm --entrypoint sh modern-machinery:ci -c "id -un")
+          echo "Пользователь в контейнере: $user"
+          test "$user" = "app"

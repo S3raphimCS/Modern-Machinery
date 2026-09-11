@@ -1,0 +1,43 @@
+# Что не должно попадать в образ.
+#
+# Без этого файла в образ уезжает весь каталог проекта — включая .env с
+# секретами и всю историю .git. Любой, кто получит образ, получит и их.
+
+# --- Секреты и локальное состояние ---
+.env
+.env.*
+!.env.example
+
+# --- История и служебные каталоги ---
+.git
+.gitignore
+.github
+.pre-commit-config.yaml
+
+# --- Окружение и кэши ---
+.venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.coverage
+coverage.xml
+htmlcov
+
+# --- Данные рантайма: приезжают томами, а не образом ---
+media
+staticfiles
+backups
+celerybeat-schedule*
+*.sqlite3
+*.log
+
+# --- Исходники макетов: нужны разработчику, не приложению ---
+design
+Design.zip
+
+# --- Прочее ---
+.idea
+.vscode
+*.swp

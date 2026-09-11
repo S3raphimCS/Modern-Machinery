@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;}
+</style>
+</helmet>
+
+<div style="width:max-content;min-width:100%;min-height:100vh;box-sizing:border-box;padding:48px;background:#E7E5E0;font-family:'Roboto',sans-serif;">
+
+  <!-- intro -->
+  <div style="margin-bottom:36px;max-width:900px;">
+    <div style="font-family:'Montserrat',sans-serif;font-size:13px;letter-spacing:2px;color:#B01020;font-weight:600;text-transform:uppercase;">Модерн Машинери · страница «Техника»</div>
+    <div style="font-size:26px;font-weight:700;color:#16181C;margin-top:6px;font-family:'Montserrat',sans-serif;">Страница товара + три направления каталога</div>
+    <div style="font-size:15px;color:#5c5e63;margin-top:8px;line-height:1.5;">Единая типографика: Montserrat в заголовках, Roboto в тексте, Roboto Mono в техданных. Палитра красный / чёрный / белый. Наличие везде задаётся данными и управляется из Django-админки: «в наличии» с остатками по городам либо «под заказ» со сроком поставки.</div>
+  </div>
+
+
+  <!-- ============ PRODUCT PAGE ============ -->
+  <div style="margin-bottom:56px;">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
+      <span style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;color:#16181C;text-transform:uppercase;">Страница товара</span>
+      <span style="font-size:13px;color:#5c5e63;">Карточка модели · наличие по городам · заявка, звонок, мессенджеры</span>
+    </div>
+    <div style="width:1280px;background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.10);overflow:hidden;font-family:'Roboto',sans-serif;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 44px;height:92px;border-bottom:1px solid #ececec;">
+        <img src="modern-machinery-logo.svg" alt="Модерн Машинери" style="height:32px;width:auto;display:block;">
+        <div style="display:flex;align-items:center;gap:32px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:500;">
+          <span style="color:#16181C;font-weight:700;">Техника</span>
+          <span style="color:#65686d;">Запчасти</span>
+          <span style="color:#65686d;">Сервис</span>
+          <span style="color:#65686d;">О компании</span>
+          <span style="color:#65686d;">Контакты</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="text-align:right;"><div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:700;color:#16181C;">+7 (4132) 699-699</div><div style="font-size:12px;color:#63666b;">Магадан · сменить город</div></div>
+          <div style="border:1.5px solid #DD1C2B;color:#DD1C2B;font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;padding:10px 18px;border-radius:6px;">Заявка</div>
+        </div>
+      </div>
+      <div style="padding:16px 44px;font-size:13px;color:#63666b;border-bottom:1px solid #f2f2f2;">Главная <span style="color:#c8cacd;">/</span> Техника <span style="color:#c8cacd;">/</span> Экскаваторы <span style="color:#c8cacd;">/</span> <span style="color:#16181C;">KOMATSU PC200-8</span></div>
+      <div style="display:flex;gap:36px;padding:32px 44px 8px;align-items:flex-start;">
+        <div style="flex:1;min-width:0;">
+          <div style="position:relative;height:360px;border-radius:12px;background:repeating-linear-gradient(135deg,#ededed 0 10px,#f6f6f6 10px 20px);overflow:hidden;">
+            <span style="position:absolute;top:16px;left:16px;background:#EAF6EE;color:#186B3B;font-family:'Montserrat',sans-serif;font-weight:600;font-size:12px;padding:6px 13px;border-radius:20px;">● В наличии</span>
+            <span style="position:absolute;bottom:14px;right:16px;font-family:'Roboto Mono',monospace;font-size:11px;color:#a3a29e;letter-spacing:1px;">[ главное фото 1200×800 ]</span>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:10px;">
+            <div style="flex:1;height:74px;border-radius:8px;border:2px solid #DD1C2B;background:repeating-linear-gradient(135deg,#ededed 0 8px,#f6f6f6 8px 16px);"></div><div style="flex:1;height:74px;border-radius:8px;background:repeating-linear-gradient(135deg,#ededed 0 8px,#f6f6f6 8px 16px);"></div><div style="flex:1;height:74px;border-radius:8px;background:repeating-linear-gradient(135deg,#ededed 0 8px,#f6f6f6 8px 16px);"></div><div style="flex:1;height:74px;border-radius:8px;background:repeating-linear-gradient(135deg,#ededed 0 8px,#f6f6f6 8px 16px);"></div><div style="flex:1;height:74px;border-radius:8px;background:#16181C;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;">+6 фото</div>
+          </div>
+        </div>
+        <div style="flex:none;width:420px;">
+          <div style="font-size:13px;color:#63666b;">Экскаватор гусеничный · Komatsu</div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:34px;line-height:1.1;color:#16181C;margin-top:4px;letter-spacing:-.5px;">KOMATSU PC200-8</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:10px;font-size:13px;color:#63666b;">
+            <span style="font-family:'Roboto Mono',monospace;background:#f3f3f3;padding:3px 8px;border-radius:4px;color:#5c5f64;">ART-20081</span>
+            <span>2021 г. · 3 400 м/ч</span>
+          </div>
+          <div style="margin-top:20px;background:#F6F5F3;border-radius:12px;padding:20px;">
+            <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:28px;color:#16181C;">Цена по запросу</div>
+            <div style="font-size:13px;color:#6a6d72;margin-top:4px;">Аренда от 18 000 ₽/смена · продажа и лизинг</div>
+            <div style="height:1px;background:#e6e4e0;margin:16px 0;"></div>
+            <div style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:13px;color:#16181C;text-transform:uppercase;letter-spacing:.5px;">Наличие по городам</div>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;font-size:14px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;"><span style="color:#3c3e42;">Магадан</span><span style="color:#186B3B;font-weight:500;">В наличии · 2 ед.</span></div><div style="display:flex;justify-content:space-between;align-items:center;"><span style="color:#3c3e42;">Хабаровск</span><span style="color:#186B3B;font-weight:500;">В наличии · 1 ед.</span></div><div style="display:flex;justify-content:space-between;align-items:center;"><span style="color:#3c3e42;">Якутск</span><span style="color:#C8132A;font-weight:500;">Под заказ · 4 нед.</span></div>
+            </div>
+            <div style="margin-top:18px;background:#DD1C2B;color:#fff;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:15px;padding:14px;border-radius:8px;">Оставить заявку</div>
+            <div style="display:flex;gap:8px;margin-top:8px;"><div style="flex:1;background:#fff;border:1px solid #dcdcdc;color:#16181C;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;padding:12px;border-radius:8px;">Позвонить</div><div style="flex:1;background:#fff;border:1px solid #dcdcdc;color:#16181C;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;padding:12px;border-radius:8px;">WhatsApp</div><div style="flex:1;background:#fff;border:1px solid #dcdcdc;color:#16181C;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;padding:12px;border-radius:8px;">Telegram</div></div>
+          </div>
+          <div style="display:flex;gap:20px;margin-top:16px;font-size:13px;color:#6a6d72;">
+            <div style="display:flex;gap:7px;"><span style="color:#DD1C2B;font-weight:700;">✓</span>Гарантия 12 мес.</div>
+            <div style="display:flex;gap:7px;"><span style="color:#DD1C2B;font-weight:700;">✓</span>Доставка на объект</div>
+            <div style="display:flex;gap:7px;"><span style="color:#DD1C2B;font-weight:700;">✓</span>Сервис 24/7</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:28px 44px 0;">
+        <div style="display:flex;gap:28px;border-bottom:1px solid #ececec;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:600;">
+          <span style="color:#16181C;border-bottom:2.5px solid #DD1C2B;padding-bottom:12px;">Характеристики</span>
+          <span style="color:#63666b;padding-bottom:12px;">Комплектация</span>
+          <span style="color:#63666b;padding-bottom:12px;">Сервис и гарантия</span>
+          <span style="color:#63666b;padding-bottom:12px;">Документы</span>
+        </div>
+      </div>
+      <div style="padding:24px 44px 8px;display:flex;gap:40px;align-items:flex-start;">
+        <div style="flex:1;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 40px;">
+            <div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f0f0f0;font-size:14px;"><span style="color:#6a6d72;">Эксплуатационная масса</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">20 000 кг</span></div><div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f0f0f0;font-size:14px;"><span style="color:#6a6d72;">Глубина копания</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">6 620 мм</span></div><div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f0f0f0;font-size:14px;"><span style="color:#6a6d72;">Двигатель</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">SAA6D107E-1</span></div><div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f0f0f0;font-size:14px;"><span style="color:#6a6d72;">Радиус копания</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">9 875 мм</span></div><div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f0f0f0;font-size:14px;"><span style="color:#6a6d72;">Мощность</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">110 кВт / 148 л.с.</span></div><div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f0f0f0;font-size:14px;"><span style="color:#6a6d72;">Ширина гусениц</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">600 мм</span></div><div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f0f0f0;font-size:14px;"><span style="color:#6a6d72;">Объём ковша</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">0.80 м³</span></div><div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f0f0f0;font-size:14px;"><span style="color:#6a6d72;">Топливный бак</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">400 л</span></div>
+          </div>
+          <div style="margin-top:18px;font-size:15px;color:#5c5f64;line-height:1.6;max-width:640px;">Универсальный гусеничный экскаватор для земляных работ, погрузки и разработки грунта в условиях Севера. Комплектуется системой контроля Komatsu KOMTRAX, усиленной ходовой частью и подогревом гидравлики.</div>
+        </div>
+        <div style="flex:none;width:320px;border:1px dashed #d8d6d2;border-radius:12px;padding:18px;background:#FCFCFB;">
+          <div style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#63666b;">Состояние «нет в наличии»</div>
+          <div style="font-size:13px;color:#6a6d72;margin-top:6px;line-height:1.5;">Так выглядит тот же блок, когда позиция снята с остатков в админке.</div>
+          <div style="margin-top:14px;background:#F6F5F3;border-radius:10px;padding:16px;">
+            <div style="display:inline-flex;align-items:center;gap:6px;background:#FCE9EB;color:#C8132A;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;"><span style="width:7px;height:7px;border-radius:50%;background:#C8132A;"></span>Под заказ</div>
+            <div style="font-size:14px;color:#3c3e42;margin-top:12px;">Срок поставки <b style="color:#16181C;">6–8 недель</b></div>
+            <div style="margin-top:12px;background:#16181C;color:#fff;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;padding:12px;border-radius:8px;">Оформить под заказ</div>
+            <div style="margin-top:8px;background:#fff;border:1px solid #dcdcdc;color:#16181C;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;padding:11px;border-radius:8px;">Подобрать аналог в наличии</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:28px 44px 44px;">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px;">
+          <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:22px;color:#16181C;letter-spacing:-.3px;">Запчасти для этой модели</div>
+          <div style="font-size:14px;color:#DD1C2B;font-weight:500;">Все запчасти PC200-8 →</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;">
+          <div style="border:1px solid #ececec;border-radius:10px;padding:16px;display:flex;gap:14px;align-items:center;"><div style="flex:none;width:64px;height:64px;border-radius:8px;background:repeating-linear-gradient(135deg,#ededed 0 8px,#f6f6f6 8px 16px);"></div><div style="flex:1;min-width:0;"><div style="font-size:15px;font-weight:500;color:#16181C;">Фильтр гидравлический</div><div style="font-family:'Roboto Mono',monospace;font-size:12px;color:#6b6e73;margin-top:2px;">207-60-71182</div><div style="font-size:12px;font-weight:600;color:#186B3B;margin-top:6px;">В наличии · 14 шт.</div></div></div><div style="border:1px solid #ececec;border-radius:10px;padding:16px;display:flex;gap:14px;align-items:center;"><div style="flex:none;width:64px;height:64px;border-radius:8px;background:repeating-linear-gradient(135deg,#ededed 0 8px,#f6f6f6 8px 16px);"></div><div style="flex:1;min-width:0;"><div style="font-size:15px;font-weight:500;color:#16181C;">Зуб ковша</div><div style="font-family:'Roboto Mono',monospace;font-size:12px;color:#6b6e73;margin-top:2px;">205-70-19570</div><div style="font-size:12px;font-weight:600;color:#186B3B;margin-top:6px;">В наличии · 32 шт.</div></div></div><div style="border:1px solid #ececec;border-radius:10px;padding:16px;display:flex;gap:14px;align-items:center;"><div style="flex:none;width:64px;height:64px;border-radius:8px;background:repeating-linear-gradient(135deg,#ededed 0 8px,#f6f6f6 8px 16px);"></div><div style="flex:1;min-width:0;"><div style="font-size:15px;font-weight:500;color:#16181C;">Гусеничная лента</div><div style="font-family:'Roboto Mono',monospace;font-size:12px;color:#6b6e73;margin-top:2px;">20Y-32-00022</div><div style="font-size:12px;font-weight:600;color:#C8132A;margin-top:6px;">Под заказ · 3 нед.</div></div></div>
+        </div>
+      </div>
+      <div style="background:#16181C;padding:40px 44px;display:flex;gap:40px;align-items:center;">
+        <div style="flex:none;width:340px;">
+          <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:26px;color:#fff;line-height:1.2;letter-spacing:-.3px;">Нужна эта техника<br>на объект?</div>
+          <div style="font-size:14px;color:#a9abae;margin-top:10px;line-height:1.5;">Ответим в течение 15 минут в рабочее время, подберём условия аренды или поставки.</div>
+        </div>
+        <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="background:#23262b;border:1px solid #34383e;border-radius:8px;padding:13px 15px;font-size:14px;color:#9ba0a6;">Ваше имя</div><div style="background:#23262b;border:1px solid #34383e;border-radius:8px;padding:13px 15px;font-size:14px;color:#9ba0a6;">Телефон</div><div style="background:#23262b;border:1px solid #34383e;border-radius:8px;padding:13px 15px;font-size:14px;color:#9ba0a6;">Город</div><div style="background:#DD1C2B;border-radius:8px;padding:13px;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:15px;color:#fff;">Отправить заявку</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:56px;align-items:flex-start;">
+
+    <!-- ============ DIRECTION A — ИНДУСТРИАЛЬНОЕ ============ -->
+    <div style="flex:none;width:1280px;">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
+        <span style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;color:#16181C;text-transform:uppercase;">A · Тяжёлое индустриальное</span>
+        <span style="font-size:13px;color:#5c5e63;">Контраст, чёрный, острые формы, тёмный hero</span>
+      </div>
+      <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.10);overflow:hidden;">
+
+        <!-- top red strip -->
+        <div style="height:5px;background:#DD1C2B;"></div>
+        <!-- header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:88px;border-bottom:3px solid #16181C;">
+          <img src="modern-machinery-logo.svg" alt="Модерн Машинери" style="height:34px;width:auto;display:block;">
+          <div style="display:flex;align-items:center;gap:30px;font-family:'Montserrat',sans-serif;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;font-weight:500;">
+            <span style="color:#16181C;border-bottom:3px solid #DD1C2B;padding-bottom:6px;">Техника</span>
+            <span style="color:#3c3e42;">Запчасти</span>
+            <span style="color:#3c3e42;">Сервис</span>
+            <span style="color:#3c3e42;">О компании</span>
+            <span style="color:#3c3e42;">Контакты</span>
+          </div>
+          <div style="text-align:right;font-family:'Montserrat',sans-serif;">
+            <div style="font-size:22px;font-weight:700;color:#16181C;letter-spacing:.5px;">+7 (4132) 699-699</div>
+            <div style="font-size:12px;color:#DD1C2B;letter-spacing:1px;text-transform:uppercase;">9 городов · работаем с 1998</div>
+          </div>
+        </div>
+
+        <!-- hero -->
+        <div style="position:relative;height:330px;background:#16181C;overflow:hidden;">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#1d2024 0 11px,#23272c 11px 22px);"></div>
+          <div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);font-family:'Roboto Mono',monospace;font-size:11px;letter-spacing:2px;color:#5a5e64;text-transform:uppercase;">[ фото · спецтехника на объекте ]</div>
+          <div style="position:absolute;right:0;top:0;bottom:0;width:140px;background:#DD1C2B;clip-path:polygon(40% 0,100% 0,100% 100%,0 100%);opacity:.92;"></div>
+          <div style="position:absolute;left:40px;bottom:42px;">
+            <div style="font-family:'Roboto Mono',monospace;font-size:12px;letter-spacing:2px;color:#FF5A66;text-transform:uppercase;margin-bottom:14px;">Техника / Горная и строительная</div>
+            <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:64px;line-height:.95;color:#fff;text-transform:uppercase;letter-spacing:.5px;">Спецтехника<br>Komatsu</div>
+            <div style="display:inline-block;margin-top:18px;background:#DD1C2B;color:#fff;font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;padding:12px 26px;">Аренда · продажа · под заказ</div>
+          </div>
+        </div>
+
+        <!-- catalog -->
+        <div style="padding:40px;display:flex;gap:32px;align-items:flex-start;">
+          <!-- sidebar -->
+          <div style="flex:none;width:236px;">
+            <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase;color:#16181C;margin-bottom:16px;">Виды техники</div>
+            <div style="border-top:2px solid #16181C;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #e6e6e6;font-weight:700;color:#16181C;font-size:15px;">Горная и строительная<span style="color:#DD1C2B;">›</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #e6e6e6;color:#55585d;font-size:15px;">Дорожно-строительная<span style="color:#b9bbbe;">›</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #e6e6e6;color:#55585d;font-size:15px;">Горно-шахтное оборуд.<span style="color:#b9bbbe;">›</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #e6e6e6;color:#55585d;font-size:15px;">Складская техника<span style="color:#b9bbbe;">›</span></div>
+            </div>
+            <div style="margin-top:24px;background:#16181C;padding:22px;">
+              <div style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:17px;color:#fff;text-transform:uppercase;line-height:1.2;">Не нашли<br>модель?</div>
+              <div style="font-size:13px;color:#a9abae;margin-top:8px;line-height:1.4;">Подберём и привезём под ваш объект.</div>
+              <div style="margin-top:14px;background:#DD1C2B;color:#fff;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:11px;">Оставить заявку</div>
+            </div>
+          </div>
+
+          <!-- grid -->
+          <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+            <!-- card 1 in stock -->
+            <div style="border:1px solid #e2e2e2;">
+              <div style="position:relative;height:158px;background:repeating-linear-gradient(135deg,#ededed 0 9px,#f7f7f7 9px 18px);">
+                <span style="position:absolute;top:12px;left:14px;background:#16181C;color:#fff;font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:5px 11px;">✓ В наличии</span>
+                <span style="position:absolute;bottom:10px;right:12px;font-family:'Roboto Mono',monospace;font-size:10px;color:#9a9c9f;letter-spacing:1px;">[ ФОТО ]</span>
+              </div>
+              <div style="padding:18px;">
+                <div style="font-family:'Montserrat',sans-serif;font-size:13px;letter-spacing:1px;color:#DD1C2B;text-transform:uppercase;">Экскаватор гусеничный</div>
+                <div style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:23px;color:#16181C;line-height:1.1;margin-top:2px;">KOMATSU PC200-8</div>
+                <div style="margin-top:12px;border-top:1px solid #eee;">
+                  <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f1f1;font-size:14px;"><span style="color:#6a6d72;">Масса</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">20 т</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:14px;"><span style="color:#6a6d72;">Ковш</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">0.80 м³</span></div>
+                </div>
+                <div style="margin-top:14px;background:#DD1C2B;color:#fff;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:12px;cursor:pointer;">Оставить заявку</div>
+              </div>
+            </div>
+
+            <!-- card 2 in stock -->
+            <div style="border:1px solid #e2e2e2;">
+              <div style="position:relative;height:158px;background:repeating-linear-gradient(135deg,#ededed 0 9px,#f7f7f7 9px 18px);">
+                <span style="position:absolute;top:12px;left:14px;background:#16181C;color:#fff;font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:5px 11px;">✓ В наличии</span>
+                <span style="position:absolute;bottom:10px;right:12px;font-family:'Roboto Mono',monospace;font-size:10px;color:#9a9c9f;letter-spacing:1px;">[ ФОТО ]</span>
+              </div>
+              <div style="padding:18px;">
+                <div style="font-family:'Montserrat',sans-serif;font-size:13px;letter-spacing:1px;color:#DD1C2B;text-transform:uppercase;">Фронтальный погрузчик</div>
+                <div style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:23px;color:#16181C;line-height:1.1;margin-top:2px;">KOMATSU WA380-8</div>
+                <div style="margin-top:12px;border-top:1px solid #eee;">
+                  <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f1f1;font-size:14px;"><span style="color:#6a6d72;">Ковш</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">4.2 м³</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:14px;"><span style="color:#6a6d72;">Мощность</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">191 л.с.</span></div>
+                </div>
+                <div style="margin-top:14px;background:#DD1C2B;color:#fff;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:12px;cursor:pointer;">Оставить заявку</div>
+              </div>
+            </div>
+
+            <!-- card 3 ПОД ЗАКАЗ -->
+            <div style="border:1px solid #e2e2e2;">
+              <div style="position:relative;height:158px;background:repeating-linear-gradient(135deg,#ededed 0 9px,#f7f7f7 9px 18px);">
+                <span style="position:absolute;top:12px;left:14px;background:#DD1C2B;color:#fff;font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:5px 11px;">Под заказ</span>
+                <span style="position:absolute;bottom:10px;right:12px;font-family:'Roboto Mono',monospace;font-size:10px;color:#9a9c9f;letter-spacing:1px;">[ ФОТО ]</span>
+              </div>
+              <div style="padding:18px;">
+                <div style="font-family:'Montserrat',sans-serif;font-size:13px;letter-spacing:1px;color:#DD1C2B;text-transform:uppercase;">Мобильная дробилка</div>
+                <div style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:23px;color:#16181C;line-height:1.1;margin-top:2px;">KOMATSU BR380JG</div>
+                <div style="margin-top:12px;border-top:1px solid #eee;">
+                  <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f1f1;font-size:14px;"><span style="color:#6a6d72;">Производит.</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">240 т/ч</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:14px;"><span style="color:#6a6d72;">Срок</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">6–8 нед.</span></div>
+                </div>
+                <div style="margin-top:14px;background:#16181C;color:#fff;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:12px;cursor:pointer;">Оформить под заказ</div>
+              </div>
+            </div>
+
+            <!-- card 4 in stock -->
+            <div style="border:1px solid #e2e2e2;">
+              <div style="position:relative;height:158px;background:repeating-linear-gradient(135deg,#ededed 0 9px,#f7f7f7 9px 18px);">
+                <span style="position:absolute;top:12px;left:14px;background:#16181C;color:#fff;font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:5px 11px;">✓ В наличии</span>
+                <span style="position:absolute;bottom:10px;right:12px;font-family:'Roboto Mono',monospace;font-size:10px;color:#9a9c9f;letter-spacing:1px;">[ ФОТО ]</span>
+              </div>
+              <div style="padding:18px;">
+                <div style="font-family:'Montserrat',sans-serif;font-size:13px;letter-spacing:1px;color:#DD1C2B;text-transform:uppercase;">Бульдозер</div>
+                <div style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:23px;color:#16181C;line-height:1.1;margin-top:2px;">KOMATSU D65EX-18</div>
+                <div style="margin-top:12px;border-top:1px solid #eee;">
+                  <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f1f1;font-size:14px;"><span style="color:#6a6d72;">Масса</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">22 т</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:14px;"><span style="color:#6a6d72;">Мощность</span><span style="font-family:'Roboto Mono',monospace;color:#16181C;">217 л.с.</span></div>
+                </div>
+                <div style="margin-top:14px;background:#DD1C2B;color:#fff;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:12px;cursor:pointer;">Оставить заявку</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ DIRECTION B — ЧИСТОЕ КОРПОРАТИВНОЕ ============ -->
+    <div style="flex:none;width:1280px;">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
+        <span style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;color:#16181C;text-transform:uppercase;">B · Чистое корпоративное</span>
+        <span style="font-size:13px;color:#5c5e63;">Воздух, мягкие формы, сдержанный красный</span>
+      </div>
+      <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.10);overflow:hidden;font-family:'Roboto',sans-serif;">
+
+        <!-- header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0 44px;height:92px;border-bottom:1px solid #ececec;">
+          <img src="modern-machinery-logo.svg" alt="Модерн Машинери" style="height:32px;width:auto;display:block;">
+          <div style="display:flex;align-items:center;gap:32px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:500;">
+            <span style="color:#16181C;font-weight:700;">Техника</span>
+            <span style="color:#65686d;">Запчасти</span>
+            <span style="color:#65686d;">Сервис</span>
+            <span style="color:#65686d;">О компании</span>
+            <span style="color:#65686d;">Контакты</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div style="text-align:right;"><div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:700;color:#16181C;">+7 (4132) 699-699</div><div style="font-size:12px;color:#63666b;">office@modernmachinery.ru</div></div>
+            <div style="border:1.5px solid #DD1C2B;color:#DD1C2B;font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;padding:10px 18px;border-radius:6px;">Заявка</div>
+          </div>
+        </div>
+
+        <!-- hero -->
+        <div style="padding:40px 44px 8px;">
+          <div style="background:#F6F5F3;border-radius:12px;padding:44px;display:flex;gap:40px;align-items:center;">
+            <div style="flex:1;">
+              <div style="display:inline-block;background:#fff;border:1px solid #e7e7e7;color:#DD1C2B;font-family:'Montserrat',sans-serif;font-weight:600;font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border-radius:20px;">Спецтехника Komatsu</div>
+              <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:42px;line-height:1.06;color:#16181C;margin-top:18px;letter-spacing:-1px;">Техника в наличии<br>и под заказ</div>
+              <div style="font-size:16px;color:#5c5f64;line-height:1.55;margin-top:14px;max-width:440px;">Аренда, продажа и поставка спецтехники в 9 городах. Сервис, оригинальные запчасти и гарантия от официального поставщика.</div>
+              <div style="display:flex;gap:12px;margin-top:24px;">
+                <div style="background:#DD1C2B;color:#fff;font-family:'Montserrat',sans-serif;font-weight:600;font-size:15px;padding:13px 26px;border-radius:8px;">Оставить заявку</div>
+                <div style="background:#fff;border:1px solid #dcdcdc;color:#16181C;font-family:'Montserrat',sans-serif;font-weight:600;font-size:15px;padding:13px 26px;border-radius:8px;">Каталог техники</div>
+              </div>
+            </div>
+            <div style="flex:none;width:430px;height:250px;border-radius:10px;position:relative;background:repeating-linear-gradient(135deg,#e7e6e3 0 10px,#efeeeb 10px 20px);overflow:hidden;">
+              <span style="position:absolute;bottom:12px;right:14px;font-family:'Roboto Mono',monospace;font-size:11px;color:#a3a29e;letter-spacing:1px;">[ фото техники ]</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- catalog -->
+        <div style="padding:30px 44px 44px;">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;">
+            <div>
+              <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:26px;color:#16181C;letter-spacing:-.5px;">Каталог техники</div>
+              <div style="font-size:14px;color:#63666b;margin-top:2px;">Горная и строительная · 6 моделей</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <span style="background:#16181C;color:#fff;font-family:'Montserrat',sans-serif;font-weight:500;font-size:13px;padding:8px 16px;border-radius:20px;">Все</span>
+              <span style="background:#f3f2f0;color:#5c5f64;font-family:'Montserrat',sans-serif;font-weight:500;font-size:13px;padding:8px 16px;border-radius:20px;">Экскаваторы</span>
+              <span style="background:#f3f2f0;color:#5c5f64;font-family:'Montserrat',sans-serif;font-weight:500;font-size:13px;padding:8px 16px;border-radius:20px;">Погрузчики</span>
+              <span style="background:#f3f2f0;color:#5c5f64;font-family:'Montserrat',sans-serif;font-weight:500;font-size:13px;padding:8px 16px;border-radius:20px;">Дробилки</span>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px;">
+
+            <!-- B card 1 -->
+            <div style="border:1px solid #ececec;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.03);">
+              <div style="position:relative;height:170px;background:repeating-linear-gradient(135deg,#efefef 0 10px,#f7f7f7 10px 20px);">
+                <span style="position:absolute;top:13px;left:14px;background:#EAF6EE;color:#186B3B;font-family:'Montserrat',sans-serif;font-weight:600;font-size:12px;padding:5px 12px;border-radius:20px;">● В наличии</span>
+              </div>
+              <div style="padding:20px;">
+                <div style="font-size:13px;color:#63666b;">Экскаватор гусеничный</div>
+                <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:20px;color:#16181C;margin-top:3px;">KOMATSU PC200-8</div>
+                <div style="display:flex;gap:18px;margin-top:14px;font-size:13px;">
+                  <div><div style="color:#6b6e73;">Масса</div><div style="font-weight:700;color:#16181C;margin-top:2px;">20 т</div></div>
+                  <div><div style="color:#6b6e73;">Ковш</div><div style="font-weight:700;color:#16181C;margin-top:2px;">0.80 м³</div></div>
+                </div>
+                <div style="margin-top:18px;background:#DD1C2B;color:#fff;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;padding:12px;border-radius:8px;">Оставить заявку</div>
+              </div>
+            </div>
+
+            <!-- B card 2 -->
+            <div style="border:1px solid #ececec;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.03);">
+              <div style="position:relative;height:170px;background:repeating-linear-gradient(135deg,#efefef 0 10px,#f7f7f7 10px 20px);">
+                <span style="position:absolute;top:13px;left:14px;background:#EAF6EE;color:#186B3B;font-family:'Montserrat',sans-serif;font-weight:600;font-size:12px;padding:5px 12px;border-radius:20px;">● В наличии</span>
+              </div>
+              <div style="padding:20px;">
+                <div style="font-size:13px;color:#63666b;">Фронтальный погрузчик</div>
+                <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:20px;color:#16181C;margin-top:3px;">KOMATSU WA380-8</div>
+                <div style="display:flex;gap:18px;margin-top:14px;font-size:13px;">
+                  <div><div style="color:#6b6e73;">Ковш</div><div style="font-weight:700;color:#16181C;margin-top:2px;">4.2 м³</div></div>
+                  <div><div style="color:#6b6e73;">Мощность</div><div style="font-weight:700;color:#16181C;margin-top:2px;">191 л.с.</div></div>
+                </div>
+                <div style="margin-top:18px;background:#DD1C2B;color:#fff;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;padding:12px;border-radius:8px;">Оставить заявку</div>
+              </div>
+            </div>
+
+            <!-- B card 3 ПОД ЗАКАЗ -->
+            <div style="border:1px solid #ececec;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.03);">
+              <div style="position:relative;height:170px;background:repeating-linear-gradient(135deg,#efefef 0 10px,#f7f7f7 10px 20px);">
+                <span style="position:absolute;top:13px;left:14px;background:#FCE9EB;color:#C8132A;font-family:'Montserrat',sans-serif;font-weight:600;font-size:12px;padding:5px 12px;border-radius:20px;">● Под заказ</span>
+              </div>
+              <div style="padding:20px;">
+                <div style="font-size:13px;color:#63666b;">Мобильная дробилка</div>
+                <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:20px;color:#16181C;margin-top:3px;">KOMATSU BR380JG</div>
+                <div style="display:flex;gap:18px;margin-top:14px;font-size:13px;">
+                  <div><div style="color:#6b6e73;">Производит.</div><div style="font-weight:700;color:#16181C;margin-top:2px;">240 т/ч</div></div>
+                  <div><div style="color:#6b6e73;">Срок</div><div style="font-weight:700;color:#16181C;margin-top:2px;">6–8 нед.</div></div>
+                </div>
+                <div style="margin-top:18px;background:#fff;border:1.5px solid #16181C;color:#16181C;text-align:center;font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;padding:11px;border-radius:8px;">Заказать поставку</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ DIRECTION C — КАТАЛОГ / УТИЛИТАРНОЕ ============ -->
+    <div style="flex:none;width:1280px;">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
+        <span style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;color:#16181C;text-transform:uppercase;">C · Каталог / складской</span>
+        <span style="font-size:13px;color:#5c5e63;">Плотно, статусы и остатки, как реальный каталог из админки</span>
+      </div>
+      <div style="background:#fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.10);overflow:hidden;font-family:'Roboto',sans-serif;">
+
+        <!-- header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0 36px;height:70px;border-bottom:1px solid #e7e7e7;">
+          <img src="modern-machinery-logo.svg" alt="Модерн Машинери" style="height:28px;width:auto;display:block;">
+          <div style="display:flex;align-items:center;gap:26px;font-size:14px;font-weight:500;">
+            <span style="color:#16181C;">Техника</span>
+            <span style="color:#6a6d72;">Запчасти</span>
+            <span style="color:#6a6d72;">Сервис</span>
+            <span style="color:#6a6d72;">О компании</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div style="display:flex;align-items:center;background:#f3f3f3;border:1px solid #e3e3e3;border-radius:6px;padding:7px 12px;width:200px;color:#6b6e73;font-size:13px;">Поиск по каталогу…</div>
+            <div style="font-size:16px;font-weight:600;color:#16181C;">+7 (4132) 699-699</div>
+          </div>
+        </div>
+
+        <!-- breadcrumb / control bar -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 36px;background:#fafafa;border-bottom:1px solid #ededed;">
+          <div style="font-size:13px;color:#6a6d72;">Техника <span style="color:#c2c4c7;">/</span> <span style="color:#16181C;font-weight:600;">Горная и строительная</span></div>
+          <div style="display:flex;align-items:center;gap:18px;font-size:13px;color:#6a6d72;">
+            <span>Найдено: <b style="color:#16181C;">6</b></span>
+            <span style="border:1px solid #dcdcdc;border-radius:6px;padding:6px 12px;background:#fff;">Сортировка: сначала в наличии ▾</span>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;">
+          <!-- filter rail -->
+          <div style="flex:none;width:240px;border-right:1px solid #ededed;padding:24px 28px;min-height:560px;">
+            <div style="font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#6b6e73;font-weight:600;">Наличие</div>
+            <div style="margin-top:10px;font-size:14px;color:#16181C;display:flex;flex-direction:column;gap:9px;">
+              <div style="display:flex;align-items:center;gap:9px;"><span style="width:15px;height:15px;border:1.5px solid #DD1C2B;background:#DD1C2B;border-radius:3px;display:inline-block;position:relative;"></span>В наличии <span style="color:#6b6e73;">(4)</span></div>
+              <div style="display:flex;align-items:center;gap:9px;"><span style="width:15px;height:15px;border:1.5px solid #c7c9cc;border-radius:3px;display:inline-block;"></span>Под заказ <span style="color:#6b6e73;">(2)</span></div>
+            </div>
+            <div style="font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#6b6e73;font-weight:600;margin-top:24px;">Категория</div>
+            <div style="margin-top:10px;font-size:14px;color:#3c3e42;display:flex;flex-direction:column;gap:9px;">
+              <div style="display:flex;align-items:center;gap:9px;"><span style="width:15px;height:15px;border:1.5px solid #c7c9cc;border-radius:3px;"></span>Экскаваторы</div>
+              <div style="display:flex;align-items:center;gap:9px;"><span style="width:15px;height:15px;border:1.5px solid #c7c9cc;border-radius:3px;"></span>Погрузчики</div>
+              <div style="display:flex;align-items:center;gap:9px;"><span style="width:15px;height:15px;border:1.5px solid #c7c9cc;border-radius:3px;"></span>Бульдозеры</div>
+              <div style="display:flex;align-items:center;gap:9px;"><span style="width:15px;height:15px;border:1.5px solid #c7c9cc;border-radius:3px;"></span>Дробилки</div>
+            </div>
+            <div style="font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#6b6e73;font-weight:600;margin-top:24px;">Город</div>
+            <div style="margin-top:10px;border:1px solid #dcdcdc;border-radius:6px;padding:8px 11px;font-size:14px;color:#16181C;display:flex;justify-content:space-between;">Магадан <span style="color:#6b6e73;">▾</span></div>
+          </div>
+
+          <!-- list -->
+          <div style="flex:1;padding:20px 28px;display:flex;flex-direction:column;gap:14px;">
+
+            <!-- row 1 -->
+            <div style="display:flex;align-items:center;gap:18px;border:1px solid #e7e7e7;border-radius:8px;padding:14px;">
+              <div style="flex:none;width:104px;height:78px;border-radius:6px;background:repeating-linear-gradient(135deg,#ededed 0 8px,#f6f6f6 8px 16px);"></div>
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="font-size:17px;font-weight:600;color:#16181C;">KOMATSU PC200-8</span>
+                  <span style="font-family:'Roboto Mono',monospace;font-size:11px;color:#6b6e73;background:#f3f3f3;padding:2px 7px;border-radius:4px;">ART-20081</span>
+                </div>
+                <div style="font-size:13px;color:#6a6d72;margin-top:3px;">Экскаватор гусеничный</div>
+                <div style="display:flex;gap:20px;margin-top:8px;font-family:'Roboto Mono',monospace;font-size:13px;color:#3c3e42;">
+                  <span>Масса <b style="color:#16181C;">20 т</b></span><span>Ковш <b style="color:#16181C;">0.80 м³</b></span><span>Год <b style="color:#16181C;">2021</b></span>
+                </div>
+              </div>
+              <div style="flex:none;width:200px;text-align:right;">
+                <div style="display:inline-flex;align-items:center;gap:6px;background:#EAF6EE;color:#186B3B;font-size:12px;font-weight:600;padding:5px 11px;border-radius:20px;"><span style="width:7px;height:7px;border-radius:50%;background:#186B3B;"></span>В наличии · 2 ед.</div>
+                <div style="margin-top:10px;background:#DD1C2B;color:#fff;text-align:center;font-size:14px;font-weight:600;padding:10px;border-radius:6px;">Оставить заявку</div>
+              </div>
+            </div>
+
+            <!-- row 2 -->
+            <div style="display:flex;align-items:center;gap:18px;border:1px solid #e7e7e7;border-radius:8px;padding:14px;">
+              <div style="flex:none;width:104px;height:78px;border-radius:6px;background:repeating-linear-gradient(135deg,#ededed 0 8px,#f6f6f6 8px 16px);"></div>
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="font-size:17px;font-weight:600;color:#16181C;">KOMATSU WA380-8</span>
+                  <span style="font-family:'Roboto Mono',monospace;font-size:11px;color:#6b6e73;background:#f3f3f3;padding:2px 7px;border-radius:4px;">ART-38008</span>
+                </div>
+                <div style="font-size:13px;color:#6a6d72;margin-top:3px;">Фронтальный погрузчик</div>
+                <div style="display:flex;gap:20px;margin-top:8px;font-family:'Roboto Mono',monospace;font-size:13px;color:#3c3e42;">
+                  <span>Ковш <b style="color:#16181C;">4.2 м³</b></span><span>Мощн. <b style="color:#16181C;">191 л.с.</b></span><span>Год <b style="color:#16181C;">2022</b></span>
+                </div>
+              </div>
+              <div style="flex:none;width:200px;text-align:right;">
+                <div style="display:inline-flex;align-items:center;gap:6px;background:#EAF6EE;color:#186B3B;font-size:12px;font-weight:600;padding:5px 11px;border-radius:20px;"><span style="width:7px;height:7px;border-radius:50%;background:#186B3B;"></span>В наличии · 1 ед.</div>
+                <div style="margin-top:10px;background:#DD1C2B;color:#fff;text-align:center;font-size:14px;font-weight:600;padding:10px;border-radius:6px;">Оставить заявку</div>
+              </div>
+            </div>
+
+            <!-- row 3 ПОД ЗАКАЗ -->
+            <div style="display:flex;align-items:center;gap:18px;border:1px solid #e7e7e7;border-radius:8px;padding:14px;background:#fffafa;">
+              <div style="flex:none;width:104px;height:78px;border-radius:6px;background:repeating-linear-gradient(135deg,#ededed 0 8px,#f6f6f6 8px 16px);"></div>
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="font-size:17px;font-weight:600;color:#16181C;">KOMATSU BR380JG-1E0</span>
+                  <span style="font-family:'Roboto Mono',monospace;font-size:11px;color:#6b6e73;background:#f3f3f3;padding:2px 7px;border-radius:4px;">ART-38010</span>
+                </div>
+                <div style="font-size:13px;color:#6a6d72;margin-top:3px;">Мобильная дробилка</div>
+                <div style="display:flex;gap:20px;margin-top:8px;font-family:'Roboto Mono',monospace;font-size:13px;color:#3c3e42;">
+                  <span>Производит. <b style="color:#16181C;">240 т/ч</b></span><span>Мощн. <b style="color:#16181C;">191 л.с.</b></span>
+                </div>
+              </div>
+              <div style="flex:none;width:200px;text-align:right;">
+                <div style="display:inline-flex;align-items:center;gap:6px;background:#FCE9EB;color:#C8132A;font-size:12px;font-weight:600;padding:5px 11px;border-radius:20px;"><span style="width:7px;height:7px;border-radius:50%;background:#C8132A;"></span>Под заказ · 6–8 нед.</div>
+                <div style="margin-top:10px;background:#16181C;color:#fff;text-align:center;font-size:14px;font-weight:600;padding:10px;border-radius:6px;">Оформить под заказ</div>
+              </div>
+            </div>
+
+            <!-- row 4 -->
+            <div style="display:flex;align-items:center;gap:18px;border:1px solid #e7e7e7;border-radius:8px;padding:14px;">
+              <div style="flex:none;width:104px;height:78px;border-radius:6px;background:repeating-linear-gradient(135deg,#ededed 0 8px,#f6f6f6 8px 16px);"></div>
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="font-size:17px;font-weight:600;color:#16181C;">KOMATSU D65EX-18</span>
+                  <span style="font-family:'Roboto Mono',monospace;font-size:11px;color:#6b6e73;background:#f3f3f3;padding:2px 7px;border-radius:4px;">ART-65018</span>
+                </div>
+                <div style="font-size:13px;color:#6a6d72;margin-top:3px;">Бульдозер</div>
+                <div style="display:flex;gap:20px;margin-top:8px;font-family:'Roboto Mono',monospace;font-size:13px;color:#3c3e42;">
+                  <span>Масса <b style="color:#16181C;">22 т</b></span><span>Мощн. <b style="color:#16181C;">217 л.с.</b></span><span>Год <b style="color:#16181C;">2020</b></span>
+                </div>
+              </div>
+              <div style="flex:none;width:200px;text-align:right;">
+                <div style="display:inline-flex;align-items:center;gap:6px;background:#EAF6EE;color:#186B3B;font-size:12px;font-weight:600;padding:5px 11px;border-radius:20px;"><span style="width:7px;height:7px;border-radius:50%;background:#186B3B;"></span>В наличии · 1 ед.</div>
+                <div style="margin-top:10px;background:#DD1C2B;color:#fff;text-align:center;font-size:14px;font-weight:600;padding:10px;border-radius:6px;">Оставить заявку</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Сравнение техники — Модерн Машинери Хабаровск{% endblock %}
+{% block meta_description %}Сравните характеристики спецтехники бок о бок: мощность, масса, объём ковша, грузоподъёмность.{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,follow">{% endblock %}
+
+{% block content %}
+  <nav class="mm-breadcrumbs">
+    <a href="{% url 'catalog:machine-list' %}">Техника</a> › <span>Сравнение</span>
+  </nav>
+
+  <div class="mm-section">
+    <h1 class="mm-section__title">Сравнение техники</h1>
+
+    {% if machines %}
+      <p class="mm-catalog__count" style="margin-bottom:18px;">
+        Выбрано моделей: {{ machines|length }} из {{ max_items }}.
+        Различающиеся параметры выделены.
+      </p>
+
+      <div class="mm-table-wrap">
+        <table class="mm-table mm-compare-table">
+          <thead>
+            <tr>
+              <th class="mm-compare-table__head">Параметр</th>
+              {% for machine in machines %}
+                <th>
+                  <a href="{{ machine.get_absolute_url }}"
+                     style="font-family:var(--mm-font-display);font-weight:700;font-size:15px;color:var(--mm-ink);text-transform:none;letter-spacing:0;">
+                    {{ machine.brand.name }} {{ machine.name }}
+                  </a>
+                  <div style="font-size:12px;color:var(--mm-muted);margin-top:4px;text-transform:none;letter-spacing:0;">
+                    {{ machine.machine_type.name }}
+                  </div>
+                  <button class="mm-compare-remove" type="button"
+                          data-mm-compare-remove="{{ machine.slug }}">убрать</button>
+                </th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="mm-compare-table__row">
+              <td class="mm-compare-table__head">Наличие</td>
+              {% for machine in machines %}
+                <td>
+                  {% if machine.stock_status == 'in_stock' %}
+                    <span class="mm-status mm-status--in"><span class="mm-status__dot"></span>В наличии</span>
+                  {% elif machine.stock_status == 'low' %}
+                    <span class="mm-status mm-status--low"><span class="mm-status__dot"></span>Мало</span>
+                  {% elif machine.stock_status == 'on_order' %}
+                    <span class="mm-status mm-status--order"><span class="mm-status__dot"></span>Под заказ</span>
+                  {% else %}
+                    <span class="mm-status mm-status--none"><span class="mm-status__dot"></span>Уточнить</span>
+                  {% endif %}
+                </td>
+              {% endfor %}
+            </tr>
+            <tr class="mm-compare-table__row">
+              <td class="mm-compare-table__head">Цена</td>
+              {% for machine in machines %}<td>{{ machine.display_price }}</td>{% endfor %}
+            </tr>
+
+            {% for group in spec_groups %}
+              <tr class="mm-compare-table__group">
+                <td colspan="{{ machines|length|add:1 }}">{{ group.name }}</td>
+              </tr>
+              {% for row in group.rows %}
+                <tr class="mm-compare-table__row {% if row.is_different %}mm-compare-table__row--diff{% endif %}">
+                  <td class="mm-compare-table__head">
+                    {{ row.key.name }}{% if row.key.unit %}, {{ row.key.unit }}{% endif %}
+                  </td>
+                  {% for value in row.values %}<td>{{ value }}</td>{% endfor %}
+                </tr>
+              {% endfor %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;">
+        <a class="mm-btn mm-btn--primary" href="#"
+           hx-get="{% url 'content:lead-form-modal' %}?type=selection"
+           hx-target="#mm-modal-root" hx-swap="innerHTML">Помочь с выбором</a>
+        <a class="mm-btn mm-btn--dark" href="{% url 'catalog:machine-list' %}">Вернуться в каталог</a>
+        <button class="mm-btn mm-btn--dark" type="button" data-mm-compare-clear>Очистить</button>
+      </div>
+    {% else %}
+      <div class="mm-empty">
+        <p>Пока нечего сравнивать.</p>
+        <p>Отметьте «Сравнить» на карточках техники в каталоге — можно выбрать
+          до {{ max_items }} моделей.</p>
+        <a class="mm-btn mm-btn--primary" style="margin-top:16px;"
+           href="{% url 'catalog:machine-list' %}">Перейти в каталог</a>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block cta %}{% endblock %}

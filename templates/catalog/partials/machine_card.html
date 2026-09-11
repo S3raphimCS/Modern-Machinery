@@ -1,0 +1,57 @@
+<article class="mm-card">
+  <div class="mm-card__media">
+    {% if machine.main_image %}
+      {# Превью в WebP, исходник — запасной вариант для старых браузеров. #}
+      <picture>
+        {% if machine.main_image.thumbnail %}
+          <source srcset="{{ machine.main_image.thumbnail.url }}" type="image/webp">
+        {% endif %}
+        <img src="{{ machine.main_image.image.url }}"
+             alt="{{ machine.main_image.alt|default:machine.full_name }}"
+             width="840" height="630" loading="lazy" decoding="async">
+      </picture>
+    {% endif %}
+    {% if machine.stock_status == 'in_stock' %}
+      <span class="mm-badge mm-badge--stock">✓ В наличии</span>
+    {% elif machine.stock_status == 'low' %}
+      <span class="mm-badge mm-badge--stock">✓ Осталось мало</span>
+    {% elif machine.stock_status == 'on_order' %}
+      <span class="mm-badge mm-badge--order">Под заказ</span>
+    {% endif %}
+  </div>
+  <div class="mm-card__body">
+    <div class="mm-card__cat">{{ machine.machine_type.name }} · {{ machine.brand.name }}</div>
+    <a class="mm-card__name" href="{{ machine.get_absolute_url }}">{{ machine.name }}</a>
+
+    <dl class="mm-card__specs">
+      {% for code, spec in machine.specs_cache.items %}
+        {% if forloop.counter <= 2 %}
+          <div class="mm-card__spec">
+            <dt>{{ spec.label }}</dt>
+            <dd>{{ spec.value }}{% if spec.unit %} {{ spec.unit }}{% endif %}</dd>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </dl>
+
+    <div class="mm-card__price">{{ machine.display_price }}</div>
+
+    <label class="mm-compare-toggle">
+      <input type="checkbox" data-mm-compare="{{ machine.slug }}"
+             data-mm-compare-title="{{ machine.brand.name }} {{ machine.name }}">
+      <span>Сравнить</span>
+    </label>
+
+    <div class="mm-card__actions">
+      {% if machine.stock_status == 'on_order' %}
+        <a class="mm-btn mm-btn--dark mm-btn--block" href="#"
+           hx-get="{% url 'content:lead-form-modal' %}?type=price" hx-target="#mm-modal-root"
+           hx-swap="innerHTML">Оформить под заказ</a>
+      {% else %}
+        <a class="mm-btn mm-btn--primary mm-btn--block" href="#"
+           hx-get="{% url 'content:lead-form-modal' %}?type=price" hx-target="#mm-modal-root"
+           hx-swap="innerHTML">Оставить заявку</a>
+      {% endif %}
+    </div>
+  </div>
+</article>

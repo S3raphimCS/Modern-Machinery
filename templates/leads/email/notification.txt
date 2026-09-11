@@ -1,0 +1,30 @@
+Новая заявка с сайта филиала в Хабаровске.
+
+Тип заявки: {{ lead.get_type_display }}
+Предмет: {{ lead.subject_title }}
+{% if lead.department %}Отдел: {{ lead.department.name }}{% endif %}
+
+Контакт
+-------
+Имя: {{ lead.name }}
+{% if lead.company %}Компания: {{ lead.company }}{% endif %}
+{% if lead.inn %}ИНН: {{ lead.inn }}{% endif %}
+{% if lead.phone %}Телефон: {{ lead.phone }}{% endif %}
+{% if lead.email %}E-mail: {{ lead.email }}{% endif %}
+{% if lead.message %}
+Сообщение
+---------
+{{ lead.message }}
+{% endif %}
+{% if lead.payload %}
+Дополнительные данные
+---------------------
+{{ lead.payload }}
+{% endif %}
+Источник
+--------
+Страница: {{ lead.source_url|default:"—" }}
+{% if lead.utm %}UTM: {{ lead.utm }}{% endif %}
+Получена: {{ lead.created_at|date:"d.m.Y H:i" }}
+
+Заявка сохранена в админке сайта, идентификатор {{ lead.pk }}.

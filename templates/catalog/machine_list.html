@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load l10n static %}
+
+{% block title %}Спецтехника в Хабаровске — купить экскаватор, погрузчик, каток | Модерн Машинери{% endblock %}
+{% block meta_description %}Каталог спецтехники Komatsu, BOMAG, Manitou в Хабаровске: {{ total }} моделей с фильтрами по мощности, массе и объёму ковша. Наличие на складе, сервис и запчасти.{% endblock %}
+{% block robots %}{% if not is_indexable %}<meta name="robots" content="noindex,follow">{% endif %}{% endblock %}
+
+{% block content %}
+  {# Микроразметка филиала: региональные запросы — основной источник трафика. #}
+  <script type="application/ld+json" nonce="{{ request.csp_nonce }}">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Модерн Машинери Фар Ист — филиал в Хабаровске",
+    "image": "{{ request.scheme }}://{{ request.get_host }}{% static 'img/modern-machinery-logo.svg' %}",
+    "url": "{{ request.scheme }}://{{ request.get_host }}/",
+    {% if main_branch %}
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "{{ main_branch.city }}",
+      "streetAddress": "{{ main_branch.address }}",
+      "postalCode": "{{ main_branch.postcode }}",
+      "addressCountry": "RU"
+    },
+    {% if main_branch.latitude %}
+    "geo": {"@type": "GeoCoordinates", "latitude": "{{ main_branch.latitude|unlocalize }}", "longitude": "{{ main_branch.longitude|unlocalize }}"},
+    {% endif %}
+    {% endif %}
+    "telephone": "{{ site_settings.main_phone }}",
+    "openingHours": "{{ site_settings.work_hours }}"
+  }
+  </script>
+
+  <section class="mm-hero">
+    <div class="mm-hero__eyebrow">Официальный дистрибьютор Komatsu на Дальнем Востоке</div>
+    <h1 class="mm-hero__title">Спецтехника<br>в Хабаровске</h1>
+    <p class="mm-hero__text">
+      Экскаваторы, бульдозеры, погрузчики, катки и генераторы со склада в Хабаровске.
+      Оригинальные запчасти, собственный сервисный центр и выезд на объект.
+    </p>
+    <div class="mm-hero__actions">
+      <a class="mm-btn mm-btn--primary" href="#" hx-get="{% url 'content:lead-form-modal' %}?type=price"
+         hx-target="#mm-modal-root" hx-swap="innerHTML">Оставить заявку</a>
+      <a class="mm-btn mm-btn--ghost" href="{% url 'parts:part-list' %}">Каталог запчастей</a>
+    </div>
+  </section>
+
+  <div class="mm-stats">
+    <div class="mm-stats__item">
+      <div class="mm-stats__value">{{ facets.total }}</div>
+      <div class="mm-stats__label">моделей в каталоге</div>
+    </div>
+    <div class="mm-stats__item">
+      <div class="mm-stats__value">{{ facets.brands|length }}</div>
+      <div class="mm-stats__label">брендов-производителей</div>
+    </div>
+    <div class="mm-stats__item">
+      <div class="mm-stats__value">24/7</div>
+      <div class="mm-stats__label">аварийный выезд на объект</div>
+    </div>
+    <div class="mm-stats__item">
+      <div class="mm-stats__value">6 мес.</div>
+      <div class="mm-stats__label">гарантия на работы сервиса</div>
+    </div>
+  </div>
+
+  <div class="mm-catalog">
+    <aside class="mm-filters">
+      {% include "catalog/partials/filters.html" %}
+    </aside>
+
+    <div>
+      <div class="mm-catalog__head">
+        <div>
+          <h2 class="mm-catalog__title">Каталог техники</h2>
+          <div class="mm-catalog__count" id="mm-total">Найдено моделей: {{ total }}</div>
+        </div>
+        <div class="mm-search" style="min-width:260px;">
+          <input class="mm-input" type="search" name="q" value="{{ filters.query }}"
+                 placeholder="Модель, например PC400"
+                 hx-get="{% url 'catalog:machine-search-suggest' %}"
+                 hx-trigger="keyup changed delay:300ms"
+                 hx-target="#mm-suggest" hx-swap="innerHTML"
+                 form="mm-filter-form">
+          <div id="mm-suggest"></div>
+        </div>
+      </div>
+
+      <div id="mm-catalog-results">
+        {% include "catalog/partials/machine_grid.html" %}
+      </div>
+
+      {% include "catalog/partials/landings.html" %}
+    </div>
+  </div>
+{% endblock %}

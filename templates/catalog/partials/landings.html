@@ -1,0 +1,15 @@
+{% comment %}
+  Ссылки на подборки. Внутренняя перелинковка — то, чем страница сообщает
+  поисковику о существовании посадочных под геозапросы; без неё они
+  индексируются заметно дольше.
+{% endcomment %}
+{% if landings %}
+  <section class="mm-landings">
+    <h2 class="mm-landings__title">Популярные подборки</h2>
+    <div class="mm-landings__list">
+      {% for item in landings %}
+        <a class="mm-landings__link" href="{{ item.get_absolute_url }}">{{ item.title }}</a>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}

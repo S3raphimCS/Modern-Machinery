@@ -1,0 +1,133 @@
+{% load static %}<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Модерн Машинери Фар Ист — Хабаровск{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Спецтехника Komatsu, BOMAG, Manitou в Хабаровске: продажа, оригинальные запчасти со склада, сервисный центр и выезд на объект.{% endblock %}">
+  {% comment %}
+    Канонический адрес по умолчанию — текущий. Каталог и подборки
+    переопределяют его: отфильтрованные варианты обязаны ссылаться на
+    индексируемую страницу, иначе в выдачу попадут тысячи почти одинаковых
+    адресов и вес каталога размоется.
+  {% endcomment %}
+  {% block canonical %}<link rel="canonical" href="{{ canonical_url|default:request.build_absolute_uri }}">{% endblock %}
+  {% block robots %}{% endblock %}
+  <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <script src="{% static 'js/htmx.min.js' %}" defer></script>
+  <script src="{% static 'js/site.js' %}" defer></script>
+  {% if site_settings.verification_meta %}{{ site_settings.verification_meta|safe }}{% endif %}
+  {% block head_extra %}{% endblock %}
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<div class="mm-shell">
+  <div class="mm-topline"></div>
+
+  <header class="mm-header">
+    <div class="mm-header__inner">
+      <a href="{% url 'catalog:machine-list' %}" aria-label="На главную">
+        <img class="mm-logo" src="{% static 'img/modern-machinery-logo.svg' %}" alt="Модерн Машинери">
+      </a>
+
+      <nav class="mm-nav">
+        <a class="mm-nav__link {% if section == 'machinery' %}mm-nav__link--active{% endif %}"
+           href="{% url 'catalog:machine-list' %}">Техника</a>
+        <a class="mm-nav__link {% if section == 'parts' %}mm-nav__link--active{% endif %}"
+           href="{% url 'parts:part-list' %}">Запчасти</a>
+        <a class="mm-nav__link {% if section == 'services' %}mm-nav__link--active{% endif %}"
+           href="{% url 'services:service-list' %}">Сервисные услуги</a>
+        <a class="mm-nav__link {% if section == 'about' %}mm-nav__link--active{% endif %}"
+           href="{% url 'content:about' %}">О компании</a>
+      </nav>
+
+      <div class="mm-header__contacts">
+        {% if site_settings.main_phone %}
+          <a class="mm-header__phone" href="tel:{{ site_settings.main_phone|cut:' '|cut:'('|cut:')'|cut:'-' }}">{{ site_settings.main_phone }}</a>
+        {% endif %}
+        <span class="mm-header__hours">{{ site_settings.work_hours }}</span>
+      </div>
+
+      <button class="mm-burger" type="button" data-mm-menu-toggle aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block cta %}
+    <section class="mm-cta">
+      <div>
+        <div class="mm-cta__title">Нужна техника,<br>деталь или ремонт?</div>
+        <p style="color:#9ea2a8;margin-top:12px;">Перезвоним в течение 15 минут и уточним детали.</p>
+      </div>
+      <div>
+        {% include "leads/partials/form.html" with lead_form=callback_form lead_type='callback' compact=True %}
+      </div>
+    </section>
+  {% endblock %}
+
+  <footer class="mm-footer">
+    <div class="mm-footer__cols">
+      <div>
+        <div class="mm-footer__title">Разделы</div>
+        <a href="{% url 'catalog:machine-list' %}">Техника</a>
+        <a href="{% url 'parts:part-list' %}">Запчасти</a>
+        <a href="{% url 'services:service-list' %}">Сервисные услуги</a>
+        <a href="{% url 'content:about' %}">О компании</a>
+      </div>
+      <div>
+        <div class="mm-footer__title">Ещё</div>
+        <a href="{% url 'content:news-list' %}">Новости</a>
+        <a href="{% url 'content:vacancy-list' %}">Вакансии</a>
+        <a href="{% url 'content:tco' %}">Калькулятор стоимости владения</a>
+      </div>
+      <div>
+        <div class="mm-footer__title">Адрес</div>
+        <p style="margin:0;font-size:15px;">{{ site_settings.address }}</p>
+        <p style="margin:6px 0 0;font-size:14px;color:#8b8f95;">Склад и сервисный центр<br>{{ site_settings.work_hours }}</p>
+      </div>
+      <div>
+        <div class="mm-footer__title">Контакты</div>
+        {% if site_settings.main_phone %}<a href="tel:{{ site_settings.main_phone|cut:' '|cut:'('|cut:')'|cut:'-' }}">{{ site_settings.main_phone }}</a>{% endif %}
+        {% if site_settings.main_email %}<a href="mailto:{{ site_settings.main_email }}">{{ site_settings.main_email }}</a>{% endif %}
+        {% if site_settings.socials.whatsapp %}<a href="{{ site_settings.socials.whatsapp }}" rel="nofollow noopener">WhatsApp</a>{% endif %}
+        {% if site_settings.socials.telegram %}<a href="{{ site_settings.socials.telegram }}" rel="nofollow noopener">Telegram</a>{% endif %}
+      </div>
+    </div>
+    <div class="mm-footer__bottom">
+      <span>© {% now "Y" %} Модерн Машинери Фар Ист — филиал в Хабаровске</span>
+      <a href="{% url 'content:privacy' %}" style="display:inline;">Политика конфиденциальности</a>
+    </div>
+  </footer>
+
+  <nav class="mm-tabbar">
+    <a href="{% url 'catalog:machine-list' %}" class="{% if section == 'machinery' %}is-active{% endif %}">Техника</a>
+    <a href="{% url 'parts:part-list' %}" class="{% if section == 'parts' %}is-active{% endif %}">Запчасти</a>
+    <a href="{% url 'services:service-list' %}" class="{% if section == 'services' %}is-active{% endif %}">Сервис</a>
+    <a href="{% url 'content:about' %}" class="{% if section == 'about' %}is-active{% endif %}">Контакты</a>
+  </nav>
+</div>
+
+<div id="mm-modal-root"></div>
+
+{# Панель сравнения: показывается, когда выбрана хотя бы одна модель. #}
+<div id="mm-compare-bar" class="mm-compare-bar" hidden>
+  <span class="mm-compare-bar__text">
+    К сравнению: <b data-mm-compare-count>0</b>
+  </span>
+  <a class="mm-btn mm-btn--primary" href="{% url 'catalog:machine-compare' %}"
+     data-mm-compare-link>Сравнить</a>
+  <button class="mm-btn mm-btn--dark" type="button" data-mm-compare-clear>Очистить</button>
+</div>
+
+{% if site_settings.metrika_id %}
+  {# Счётчик переносится со старого сайта: терять накопленную статистику нельзя. #}
+  <noscript><div><img src="https://mc.yandex.ru/watch/{{ site_settings.metrika_id }}" style="position:absolute;left:-9999px" alt=""></div></noscript>
+{% endif %}
+{% block body_extra %}{% endblock %}
+</body>
+</html>

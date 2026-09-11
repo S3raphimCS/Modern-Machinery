@@ -1,0 +1,7 @@
+{% if suggestions %}
+  <div class="mm-suggest">
+    {% for machine in suggestions %}
+      <a href="{{ machine.get_absolute_url }}">{{ machine.brand.name }} {{ machine.name }}</a>
+    {% endfor %}
+  </div>
+{% endif %}

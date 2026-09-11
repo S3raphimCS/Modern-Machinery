@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ vacancy.title }} — вакансия в Хабаровске{% endblock %}
+{% block content %}
+  <nav class="mm-breadcrumbs"><a href="{% url 'content:vacancy-list' %}">Вакансии</a> › <span>{{ vacancy.title }}</span></nav>
+  <div class="mm-section">
+    <h1 class="mm-section__title">{{ vacancy.title }}</h1>
+    <div class="mm-prose">
+      {{ vacancy.description|linebreaks }}
+      {% if vacancy.requirements %}<h2>Требования</h2>{{ vacancy.requirements|linebreaks }}{% endif %}
+      {% if vacancy.salary_note %}<p><strong>Зарплата:</strong> {{ vacancy.salary_note }}</p>{% endif %}
+    </div>
+    <a class="mm-btn mm-btn--primary" href="#" hx-get="{% url 'content:lead-form-modal' %}?type=vacancy"
+       hx-target="#mm-modal-root" hx-swap="innerHTML">Откликнуться</a>
+  </div>
+{% endblock %}

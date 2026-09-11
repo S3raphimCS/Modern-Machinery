@@ -1,0 +1,53 @@
+{% if result %}
+  <div class="mm-tco__card">
+    <div class="mm-tco__card-label">Стоимость машино-часа</div>
+    <div class="mm-tco__total">{{ result.cost_per_hour|floatformat:"0g" }} ₽</div>
+    <div class="mm-tco__card-note">с учётом топлива, ТО, амортизации и оператора</div>
+  </div>
+
+  <div class="mm-tco__breakdown">
+    <div class="mm-tco__breakdown-title">Затраты за год</div>
+    <dl class="mm-tco__rows">
+      <div class="mm-tco__row">
+        <dt>Топливо</dt><dd>{{ result.fuel_cost_year|floatformat:"0g" }} ₽</dd>
+      </div>
+      <div class="mm-tco__row">
+        <dt>Обслуживание</dt><dd>{{ result.maintenance_cost_year|floatformat:"0g" }} ₽</dd>
+      </div>
+      <div class="mm-tco__row">
+        <dt>Амортизация</dt><dd>{{ result.depreciation_year|floatformat:"0g" }} ₽</dd>
+      </div>
+      <div class="mm-tco__row">
+        <dt>Оператор</dt><dd>{{ result.operator_cost_year|floatformat:"0g" }} ₽</dd>
+      </div>
+      <div class="mm-tco__row mm-tco__row--total">
+        <dt>Всего</dt><dd>{{ result.total_cost_year|floatformat:"0g" }} ₽</dd>
+      </div>
+    </dl>
+  </div>
+
+  {% if lead_saved %}
+    <div class="mm-form__success">
+      Заявка принята — менеджер пришлёт детальный расчёт.
+    </div>
+  {% endif %}
+
+  <a class="mm-btn mm-btn--dark mm-btn--block" href="{% url 'catalog:machine-list' %}">
+    Подобрать технику в каталоге
+  </a>
+
+  <p class="mm-tco__disclaimer">
+    Амортизация считается линейно с остаточной стоимостью 20%. Оценка
+    ориентировочная: точный расчёт зависит от условий эксплуатации и режима работы.
+  </p>
+{% elif form.errors %}
+  <div class="mm-tco__placeholder">
+    <div class="mm-tco__placeholder-icon" aria-hidden="true">!</div>
+    <p>Проверьте введённые значения — расчёт не получился.</p>
+  </div>
+{% else %}
+  <div class="mm-tco__placeholder">
+    <div class="mm-tco__placeholder-icon" aria-hidden="true">₽</div>
+    <p>Заполните поля слева, и здесь появится стоимость часа работы машины.</p>
+  </div>
+{% endif %}

@@ -1,0 +1,14 @@
+# Режим без сертификата: сайт работает по http, а порт 80 обслуживает
+# проверку Let's Encrypt. Нужен ровно до первого выпуска сертификата.
+
+server {
+    listen 80;
+    server_name ${SERVER_NAMES};
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type "text/plain";
+    }
+
+    include /etc/nginx/templates/locations.conf;
+}

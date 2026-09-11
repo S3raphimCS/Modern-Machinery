@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Калькулятор стоимости владения спецтехникой — Хабаровск{% endblock %}
+{% block meta_description %}Посчитайте стоимость машино-часа: топливо, обслуживание, амортизация и оператор. Быстрый расчёт стоимости владения спецтехникой.{% endblock %}
+
+{% block content %}
+  <nav class="mm-breadcrumbs">
+    <a href="{% url 'catalog:machine-list' %}">Техника</a> › <span>Калькулятор стоимости владения</span>
+  </nav>
+
+  <section class="mm-hero">
+    <div class="mm-hero__eyebrow">Оценка за две минуты</div>
+    <h1 class="mm-hero__title">Стоимость<br>владения техникой</h1>
+    <p class="mm-hero__text">
+      Цена машины — это только первый платёж. Посчитайте, во сколько обходится
+      час её работы с учётом топлива, обслуживания, амортизации и зарплаты
+      оператора.
+    </p>
+  </section>
+
+  <div class="mm-tco">
+    <form class="mm-tco__form" method="post" action="{% url 'content:tco' %}"
+          hx-post="{% url 'content:tco' %}" hx-target="#mm-tco-result" hx-swap="innerHTML">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="mm-form__errors">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      {% for group in form.grouped_fields %}
+        <fieldset class="mm-tco__group">
+          <legend class="mm-tco__legend">{{ group.title }}</legend>
+          <div class="mm-tco__fields">
+            {% for item in group.fields %}
+              <div class="mm-tco__field">
+                <label class="mm-tco__label" for="{{ item.field.id_for_label }}">
+                  {{ item.field.label }}
+                </label>
+                <div class="mm-tco__control">
+                  {{ item.field }}
+                  {% if item.unit %}<span class="mm-tco__unit">{{ item.unit }}</span>{% endif %}
+                </div>
+                {% if item.field.errors %}
+                  <div class="mm-form__errors">{{ item.field.errors.0 }}</div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      {% endfor %}
+
+      <fieldset class="mm-tco__group mm-tco__group--contacts">
+        <legend class="mm-tco__legend">Прислать точный расчёт</legend>
+        <p class="mm-tco__hint">
+          Необязательно. Расчёт покажется в любом случае — контакты нужны, только
+          если хотите, чтобы менеджер подготовил смету под вашу задачу.
+        </p>
+        <div class="mm-tco__fields">
+          <div class="mm-tco__field">
+            <label class="mm-tco__label" for="mm-tco-name">Ваше имя</label>
+            <input class="mm-input" type="text" name="name" id="mm-tco-name"
+                   placeholder="Иван Петров">
+          </div>
+          <div class="mm-tco__field">
+            <label class="mm-tco__label" for="mm-tco-phone">Телефон</label>
+            <input class="mm-input" type="tel" name="phone" id="mm-tco-phone"
+                   inputmode="tel" autocomplete="tel" maxlength="18"
+                   placeholder="+7 (___) ___-__-__">
+          </div>
+        </div>
+      </fieldset>
+
+      <button class="mm-btn mm-btn--primary mm-btn--block" type="submit">
+        Рассчитать <span class="mm-htmx-indicator">…</span>
+      </button>
+    </form>
+
+    <aside class="mm-tco__result" id="mm-tco-result">
+      {% include "content/partials/tco_result.html" %}
+    </aside>
+  </div>
+{% endblock %}

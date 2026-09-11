@@ -1,0 +1,23 @@
+{% if page_obj.paginator.num_pages > 1 %}
+  <nav class="mm-pagination" aria-label="Постраничная навигация">
+    {% if page_obj.has_previous %}
+      <a href="?{{ querystring }}&page={{ page_obj.previous_page_number }}"
+         hx-get="?{{ querystring }}&page={{ page_obj.previous_page_number }}"
+         hx-target="#mm-catalog-results" hx-swap="innerHTML" hx-push-url="true">←</a>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+      {% if num == page_obj.number %}
+        <span class="is-current">{{ num }}</span>
+      {% elif num > page_obj.number|add:-3 and num < page_obj.number|add:3 %}
+        <a href="?{{ querystring }}&page={{ num }}"
+           hx-get="?{{ querystring }}&page={{ num }}"
+           hx-target="#mm-catalog-results" hx-swap="innerHTML" hx-push-url="true">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+      <a href="?{{ querystring }}&page={{ page_obj.next_page_number }}"
+         hx-get="?{{ querystring }}&page={{ page_obj.next_page_number }}"
+         hx-target="#mm-catalog-results" hx-swap="innerHTML" hx-push-url="true">→</a>
+    {% endif %}
+  </nav>
+{% endif %}

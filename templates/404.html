@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Страница не найдена{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+{% block content %}
+  <div class="mm-section" style="text-align:center;padding-top:64px;padding-bottom:64px;">
+    <h1 class="mm-section__title">Страница не найдена</h1>
+    <p class="mm-prose" style="margin:0 auto 24px;">
+      Возможно, адрес изменился. Найдите нужное в каталоге техники или запчастей.
+    </p>
+    <a class="mm-btn mm-btn--primary" href="{% url 'catalog:machine-list' %}">В каталог техники</a>
+  </div>
+{% endblock %}
+{% block cta %}{% endblock %}

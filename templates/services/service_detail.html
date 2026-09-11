@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ service.seo_title|default:service.name }}{% endblock %}
+{% block meta_description %}{{ service.seo_description|default:service.short_description }}{% endblock %}
+
+{% block content %}
+  <nav class="mm-breadcrumbs">
+    <a href="{% url 'services:service-list' %}">Сервисные услуги</a> ›
+    <span>{{ service.category.name }}</span> › <span>{{ service.name }}</span>
+  </nav>
+
+  <div class="mm-product">
+    <div>
+      <h1 class="mm-product__title">{{ service.seo_h1|default:service.name }}</h1>
+      <div class="mm-prose" style="margin-top:18px;">{{ service.description|linebreaks }}</div>
+
+      {% if service.brands.all or service.machine_types.all %}
+        <h2 class="mm-section__title" style="font-size:18px;">Для какой техники</h2>
+        <p class="mm-prose">
+          {% for brand in service.brands.all %}{{ brand.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          {% if service.brands.all and service.machine_types.all %} · {% endif %}
+          {% for type in service.machine_types.all %}{{ type.name_plural }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        </p>
+      {% endif %}
+    </div>
+
+    <div>
+      <div class="mm-availability">
+        <div class="mm-availability__row"><span>Стоимость</span><span>{{ service.display_price }}</span></div>
+        <div class="mm-availability__row"><span>Срок</span><span>{{ service.lead_time|default:"по согласованию" }}</span></div>
+        <div class="mm-availability__row">
+          <span>Формат</span>
+          <span>{% if service.is_on_site %}Выезд на объект{% else %}В сервисном центре{% endif %}</span>
+        </div>
+      </div>
+      {% include "leads/partials/form.html" with lead_form=lead_form lead_type='service' %}
+    </div>
+  </div>
+{% endblock %}

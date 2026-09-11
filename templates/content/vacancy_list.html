@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Вакансии филиала в Хабаровске | Модерн Машинери{% endblock %}
+{% block content %}
+  <div class="mm-section">
+    <h1 class="mm-section__title">Вакансии</h1>
+    <div class="mm-services" style="padding:0;">
+      {% for vacancy in vacancies %}
+        <article class="mm-service">
+          <a class="mm-service__name" href="{{ vacancy.get_absolute_url }}">{{ vacancy.title }}</a>
+          <p class="mm-service__desc">{{ vacancy.description }}</p>
+          <div class="mm-service__meta">
+            <div><div class="mm-service__meta-label">Отдел</div>
+              <div class="mm-service__meta-value">{{ vacancy.department.name|default:"—" }}</div></div>
+            <div><div class="mm-service__meta-label">Зарплата</div>
+              <div class="mm-service__meta-value">{{ vacancy.salary_note|default:"по договорённости" }}</div></div>
+          </div>
+        </article>
+      {% empty %}
+        <p class="mm-empty">Открытых вакансий сейчас нет.</p>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

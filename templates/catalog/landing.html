@@ -1,0 +1,56 @@
+{% extends "catalog/machine_list.html" %}
+
+{% block title %}{{ landing.seo_title|default:landing.title }}{% endblock %}
+{% block meta_description %}{{ landing.seo_description|default:landing.intro|truncatewords:30 }}{% endblock %}
+{% block robots %}
+  {% if landing.is_noindex or not is_indexable %}<meta name="robots" content="noindex,follow">{% endif %}
+{% endblock %}
+
+{% block content %}
+  <nav class="mm-breadcrumbs">
+    <a href="{% url 'catalog:machine-list' %}">Техника</a> › <span>{{ landing.title }}</span>
+  </nav>
+
+  <script type="application/ld+json" nonce="{{ request.csp_nonce }}">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Техника", "item": "{{ request.scheme }}://{{ request.get_host }}/"},
+      {"@type": "ListItem", "position": 2, "name": "{{ landing.title|escapejs }}", "item": "{{ canonical_url }}"}
+    ]
+  }
+  </script>
+
+  <section class="mm-hero">
+    <div class="mm-hero__eyebrow">Каталог филиала в Хабаровске</div>
+    <h1 class="mm-hero__title">{{ landing.seo_h1|default:landing.title }}</h1>
+    {% if landing.intro %}<p class="mm-hero__text">{{ landing.intro }}</p>{% endif %}
+    <div class="mm-hero__actions">
+      <a class="mm-btn mm-btn--primary" href="#"
+         hx-get="{% url 'content:lead-form-modal' %}?type=selection"
+         hx-target="#mm-modal-root" hx-swap="innerHTML">Подобрать технику</a>
+    </div>
+  </section>
+
+  <div class="mm-catalog">
+    <aside class="mm-filters">
+      {% include "catalog/partials/filters.html" %}
+    </aside>
+
+    <div>
+      <div class="mm-catalog__head">
+        <div>
+          <h2 class="mm-catalog__title">{{ landing.title }}</h2>
+          <div class="mm-catalog__count">Найдено моделей: {{ total }}</div>
+        </div>
+      </div>
+
+      <div id="mm-catalog-results">
+        {% include "catalog/partials/machine_grid.html" %}
+      </div>
+
+      {% include "catalog/partials/landings.html" %}
+    </div>
+  </div>
+{% endblock %}

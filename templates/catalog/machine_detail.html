@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load l10n %}
+{% block title %}{{ machine.seo_title|default:machine.full_name }}{% endblock %}
+{% block meta_description %}{{ machine.seo_description|default:machine.short_description }}{% endblock %}
+{% block robots %}{% if machine.is_noindex %}<meta name="robots" content="noindex,nofollow">{% endif %}{% endblock %}
+
+{% block content %}
+  <script type="application/ld+json" nonce="{{ request.csp_nonce }}">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "{{ machine.full_name|escapejs }}",
+    "brand": {"@type": "Brand", "name": "{{ machine.brand.name|escapejs }}"},
+    "description": "{{ machine.short_description|escapejs }}",
+    "sku": "{{ machine.slug }}",
+    "offers": {
+      "@type": "Offer",
+      "url": "{{ request.build_absolute_uri }}",
+      "priceCurrency": "RUB",
+      {% if machine.price and not machine.is_price_on_request %}"price": "{{ machine.price|floatformat:0|unlocalize }}",{% endif %}
+      "availability": "{% if machine.stock_status == 'in_stock' %}https://schema.org/InStock{% elif machine.stock_status == 'on_order' %}https://schema.org/PreOrder{% else %}https://schema.org/LimitedAvailability{% endif %}"
+    }
+  }
+  </script>
+  <script type="application/ld+json" nonce="{{ request.csp_nonce }}">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Техника", "item": "{{ request.scheme }}://{{ request.get_host }}/"},
+      {"@type": "ListItem", "position": 2, "name": "{{ machine.machine_type.name|escapejs }}"},
+      {"@type": "ListItem", "position": 3, "name": "{{ machine.name|escapejs }}"}
+    ]
+  }
+  </script>
+
+  <nav class="mm-breadcrumbs">
+    <a href="{% url 'catalog:machine-list' %}">Техника</a> ›
+    <span>{{ machine.machine_type.name }}</span> ›
+    <span>{{ machine.name }}</span>
+  </nav>
+
+  <div class="mm-product">
+    <div class="mm-product__gallery">
+      <div class="mm-product__photo">
+        {% if machine.main_image %}
+          <picture>
+            {% if machine.main_image.image_webp %}
+              <source srcset="{{ machine.main_image.image_webp.url }}" type="image/webp">
+            {% endif %}
+            <img src="{{ machine.main_image.image.url }}"
+                 alt="{{ machine.main_image.alt|default:machine.full_name }}"
+                 width="1600" height="1200" decoding="async">
+          </picture>
+        {% else %}[ фото {{ machine.name }} ]{% endif %}
+      </div>
+      {% if machine.images.all|length > 1 %}
+        <div class="mm-product__thumbs">
+          {% for image in machine.images.all %}
+            <img class="mm-product__thumb" src="{{ image.thumbnail_url }}"
+                 alt="{{ image.alt }}" width="76" height="56" loading="lazy" decoding="async">
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <div>
+      <div class="mm-card__cat">{{ machine.machine_type.name }} · {{ machine.brand.name }}</div>
+      <h1 class="mm-product__title">{{ machine.seo_h1|default:machine.full_name }}</h1>
+      <div class="mm-product__meta">Модель {{ machine.name }}{% if machine.series %} · серия {{ machine.series }}{% endif %}</div>
+
+      <div class="mm-product__price">{{ machine.display_price }}</div>
+      {% if machine.price_note %}<div class="mm-product__price-note">{{ machine.price_note }}</div>{% endif %}
+
+      <div class="mm-availability">
+        {% for stock in machine.stocks.all %}
+          <div class="mm-availability__row">
+            <span>Склад · {{ stock.branch.city }}</span>
+            <span class="mm-status mm-status--{% if stock.status == 'in_stock' %}in{% elif stock.status == 'low' %}low{% elif stock.status == 'on_order' %}order{% else %}none{% endif %}">
+              <span class="mm-status__dot"></span>{{ stock.get_status_display }}{% if stock.quantity %} · {{ stock.quantity }} ед.{% endif %}
+            </span>
+          </div>
+          {% if stock.lead_time %}
+            <div class="mm-availability__row">
+              <span>Готовность к выдаче</span><span>{{ stock.lead_time }}</span>
+            </div>
+          {% endif %}
+        {% empty %}
+          <div class="mm-availability__row"><span>Наличие</span><span>Уточняйте у менеджера</span></div>
+        {% endfor %}
+        {% if machine.warranty_note %}
+          <div class="mm-availability__row"><span>Гарантия</span><span>{{ machine.warranty_note }}</span></div>
+        {% endif %}
+      </div>
+
+      <a class="mm-btn mm-btn--primary mm-btn--block" href="#"
+         hx-get="{% url 'content:lead-form-modal' %}?type=price" hx-target="#mm-modal-root"
+         hx-swap="innerHTML">Оставить заявку</a>
+
+      <label class="mm-compare-toggle" style="margin-top:12px;">
+        <input type="checkbox" data-mm-compare="{{ machine.slug }}"
+               data-mm-compare-title="{{ machine.brand.name }} {{ machine.name }}">
+        <span>Добавить к сравнению</span>
+      </label>
+
+      <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+        {% if site_settings.main_phone %}
+          <a class="mm-btn mm-btn--dark" style="flex:1;" href="tel:{{ site_settings.main_phone|cut:' '|cut:'('|cut:')'|cut:'-' }}">Позвонить</a>
+        {% endif %}
+        {% if site_settings.socials.whatsapp %}
+          <a class="mm-btn mm-btn--dark" style="flex:1;" href="{{ site_settings.socials.whatsapp }}" rel="nofollow noopener">WhatsApp</a>
+        {% endif %}
+        {% if site_settings.socials.telegram %}
+          <a class="mm-btn mm-btn--dark" style="flex:1;" href="{{ site_settings.socials.telegram }}" rel="nofollow noopener">Telegram</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="mm-tabs" data-mm-tabs>
+    <div class="mm-tabs__nav" role="tablist">
+      <button class="mm-tabs__btn" data-mm-tab="specs" role="tab" aria-selected="true">Характеристики</button>
+      {% if machine.equipment %}<button class="mm-tabs__btn" data-mm-tab="equipment" role="tab" aria-selected="false">Комплектация</button>{% endif %}
+      <button class="mm-tabs__btn" data-mm-tab="service" role="tab" aria-selected="false">Сервис и гарантия</button>
+      {% if machine.documents.all %}<button class="mm-tabs__btn" data-mm-tab="docs" role="tab" aria-selected="false">Документы</button>{% endif %}
+    </div>
+
+    <div class="mm-tabs__panel" data-mm-tab-panel="specs">
+      {% for group_name, specs in spec_groups.items %}
+        <div class="mm-specs__group">
+          <div class="mm-specs__group-title">{{ group_name }}</div>
+          <dl style="margin:0;">
+            {% for spec in specs %}
+              <div class="mm-specs__row">
+                <dt>{{ spec.spec_key.name }}</dt>
+                <dd>{{ spec.display_value }}{% if spec.spec_key.unit %} {{ spec.spec_key.unit }}{% endif %}</dd>
+              </div>
+            {% endfor %}
+          </dl>
+        </div>
+      {% empty %}
+        <p class="mm-empty">Характеристики уточняются.</p>
+      {% endfor %}
+    </div>
+
+    {% if machine.equipment %}
+      <div class="mm-tabs__panel" data-mm-tab-panel="equipment" hidden>
+        <div class="mm-prose">{{ machine.equipment|linebreaks }}</div>
+      </div>
+    {% endif %}
+
+    <div class="mm-tabs__panel" data-mm-tab-panel="service" hidden>
+      <div class="mm-prose">
+        <p>{{ machine.description }}</p>
+        <p>Обслуживание выполняет сервисный центр филиала в Хабаровске.
+          <a href="{% url 'services:service-list' %}">Посмотреть услуги сервиса</a>.</p>
+      </div>
+    </div>
+
+    {% if machine.documents.all %}
+      <div class="mm-tabs__panel" data-mm-tab-panel="docs" hidden>
+        {% for document in machine.documents.all %}
+          <div class="mm-specs__row">
+            <dt><a href="{{ document.file.url }}">{{ document.title }}</a></dt>
+            <dd>{{ document.get_kind_display }}</dd>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if related_parts %}
+    <section class="mm-section">
+      <h2 class="mm-section__title">Запчасти для этой модели</h2>
+      <div class="mm-grid">
+        {% for item in related_parts %}
+          <article class="mm-card">
+            <div class="mm-card__body">
+              <div class="mm-card__name" style="font-size:16px;">{{ item.part.name }}</div>
+              <div class="mm-table__article" style="margin-top:6px;">{{ item.part.article }}</div>
+              <div class="mm-card__actions">
+                <a class="mm-btn mm-btn--dark mm-btn--block" href="{{ item.part.get_absolute_url }}">Подробнее</a>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+      <p style="margin-top:16px;"><a href="{% url 'parts:part-list' %}?machine={{ machine.slug }}">Все запчасти →</a></p>
+    </section>
+  {% endif %}
+
+  {% if similar_machines %}
+    <section class="mm-section">
+      <h2 class="mm-section__title">Похожие модели</h2>
+      <div class="mm-grid">
+        {% for machine in similar_machines %}{% include "catalog/partials/machine_card.html" %}{% endfor %}
+      </div>
+    </section>
+  {% endif %}
+{% endblock %}

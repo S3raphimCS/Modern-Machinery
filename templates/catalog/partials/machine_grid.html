@@ -1,0 +1,14 @@
+{% comment %}Список результатов каталога: обновляется HTMX без перезагрузки страницы.{% endcomment %}
+{% if machines %}
+  <div class="mm-grid">
+    {% for machine in machines %}
+      {% include "catalog/partials/machine_card.html" %}
+    {% endfor %}
+  </div>
+  {% include "catalog/partials/pagination.html" %}
+{% else %}
+  <div class="mm-empty">
+    По заданным условиям техника не найдена. Попробуйте расширить диапазоны или
+    <a href="{% url 'catalog:machine-list' %}">сбросить фильтры</a>.
+  </div>
+{% endif %}

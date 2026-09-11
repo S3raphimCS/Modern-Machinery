@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ page.seo_title|default:page.title }}{% endblock %}
+{% block meta_description %}{{ page.seo_description }}{% endblock %}
+{% block robots %}{% if page.is_noindex %}<meta name="robots" content="noindex,nofollow">{% endif %}{% endblock %}
+{% block content %}
+  <div class="mm-section">
+    <h1 class="mm-section__title">{{ page.seo_h1|default:page.title }}</h1>
+    <div class="mm-prose">{{ page.body|linebreaks }}</div>
+    {% for block in page.blocks.all %}
+      {% include "pages/blocks/text.html" with block=block %}
+    {% endfor %}
+  </div>
+{% endblock %}

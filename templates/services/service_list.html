@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Ремонт и обслуживание спецтехники в Хабаровске — сервисный центр{% endblock %}
+{% block meta_description %}Сервисный центр в Хабаровске: ТО и ремонт спецтехники, диагностика, анализ масел, выезд на объект 24/7. Гарантия на работы 6 месяцев.{% endblock %}
+
+{% block content %}
+  <section class="mm-hero">
+    <div class="mm-hero__eyebrow">Собственный сервисный центр · выезд на объект</div>
+    <h1 class="mm-hero__title">Сервисные услуги</h1>
+    <p class="mm-hero__text">
+      Плановое обслуживание, ремонт узлов, диагностика и лаборатория анализа масел.
+      Аварийная бригада выезжает на объект круглосуточно.
+    </p>
+  </section>
+
+  <div class="mm-stats">
+    <div class="mm-stats__item"><div class="mm-stats__value">6 мес.</div><div class="mm-stats__label">гарантия на работы</div></div>
+    <div class="mm-stats__item"><div class="mm-stats__value">24/7</div><div class="mm-stats__label">выезд на объект</div></div>
+    <div class="mm-stats__item"><div class="mm-stats__value">KOMTRAX</div><div class="mm-stats__label">диагностика включена</div></div>
+    <div class="mm-stats__item"><div class="mm-stats__value">{{ services|length }}</div><div class="mm-stats__label">услуг в прайсе</div></div>
+  </div>
+
+  <div class="mm-section" style="padding-bottom:0;">
+    <div class="mm-chips">
+      <a class="mm-chip {% if not active_category %}mm-chip--active{% endif %}" href="{% url 'services:service-list' %}">Все услуги</a>
+      {% for category in categories %}
+        <a class="mm-chip {% if active_category == category.slug %}mm-chip--active{% endif %}"
+           href="?category={{ category.slug }}">{{ category.name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="mm-services">
+    {% for service in services %}
+      <article class="mm-service">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+          <a class="mm-service__name" href="{{ service.get_absolute_url }}">{{ service.name }}</a>
+          {% if service.is_available %}
+            <span class="mm-status mm-status--in"><span class="mm-status__dot"></span>Доступно</span>
+          {% else %}
+            <span class="mm-status mm-status--order"><span class="mm-status__dot"></span>Под заказ</span>
+          {% endif %}
+        </div>
+        <p class="mm-service__desc">{{ service.short_description }}</p>
+        <div class="mm-service__meta">
+          <div>
+            <div class="mm-service__meta-label">Срок</div>
+            <div class="mm-service__meta-value">{{ service.lead_time|default:"по согласованию" }}</div>
+          </div>
+          <div>
+            <div class="mm-service__meta-label">Стоимость</div>
+            <div class="mm-service__meta-value">{{ service.display_price }}</div>
+          </div>
+          {% if service.is_on_site %}
+            <div>
+              <div class="mm-service__meta-label">Формат</div>
+              <div class="mm-service__meta-value">выезд на объект</div>
+            </div>
+          {% endif %}
+        </div>
+        <div class="mm-card__actions">
+          <a class="mm-btn {% if service.is_available %}mm-btn--primary{% else %}mm-btn--dark{% endif %} mm-btn--block"
+             href="#" hx-get="{% url 'content:lead-form-modal' %}?type=service"
+             hx-target="#mm-modal-root" hx-swap="innerHTML">
+            {% if service.is_available %}Записаться{% else %}Оформить под заказ{% endif %}
+          </a>
+        </div>
+      </article>
+    {% empty %}
+      <p class="mm-empty">Услуги в этой категории пока не заведены.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

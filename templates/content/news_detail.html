@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ post.seo_title|default:post.title }}{% endblock %}
+{% block meta_description %}{{ post.seo_description|default:post.excerpt }}{% endblock %}
+{% block content %}
+  <nav class="mm-breadcrumbs"><a href="{% url 'content:news-list' %}">Новости</a> › <span>{{ post.title }}</span></nav>
+  <div class="mm-section">
+    <h1 class="mm-section__title">{{ post.seo_h1|default:post.title }}</h1>
+    <p style="color:var(--mm-muted);">{{ post.published_at|date:"d E Y" }}</p>
+    <div class="mm-prose">{{ post.body|linebreaks }}</div>
+  </div>
+{% endblock %}

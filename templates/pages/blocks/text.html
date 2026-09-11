@@ -1,0 +1,5 @@
+{% comment %}Универсальный блок конструктора: выводит заголовок и текст из payload.{% endcomment %}
+<div class="mm-prose" style="margin-top:22px;">
+  {% if block.payload.title %}<h2 class="mm-section__title" style="font-size:20px;">{{ block.payload.title }}</h2>{% endif %}
+  {% if block.payload.text %}{{ block.payload.text|linebreaks }}{% endif %}
+</div>

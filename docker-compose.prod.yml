@@ -1,0 +1,185 @@
+# Профиль для production.
+#
+# Наружу открыт только nginx. База, Redis и приложение портов не публикуют —
+# они доступны исключительно внутри сети compose. Все контейнеры работают от
+# непривилегированного пользователя, файловые системы по возможности только
+# для чтения, логи ротируются.
+
+name: modern-machinery-prod
+
+x-django-common: &django-common
+  build:
+    context: .
+    dockerfile: Dockerfile
+    target: runtime
+  image: modern-machinery:latest
+  env_file: .env
+  environment:
+    DJANGO_SETTINGS_MODULE: config.settings.production
+    DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    REDIS_URL: redis://redis:6379/0
+    CACHE_URL: redis://redis:6379/0
+    CELERY_BROKER_URL: redis://redis:6379/1
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "5"
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?переменная обязательна}
+      POSTGRES_USER: ${POSTGRES_USER:?переменная обязательна}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?переменная обязательна}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "300", "10", "--maxmemory", "256mb",
+              "--maxmemory-policy", "allkeys-lru", "--loglevel", "warning"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+
+  web:
+    <<: *django-common
+    volumes:
+      - media:/app/media
+      - static:/app/staticfiles
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  worker:
+    <<: *django-common
+    # Воркер не должен выполнять миграции и собирать статику: это делает web.
+    entrypoint: []
+    command: ["celery", "-A", "config", "worker", "--loglevel", "info", "--concurrency", "4"]
+    volumes:
+      - media:/app/media
+    healthcheck:
+      test: ["CMD", "celery", "-A", "config", "inspect", "ping", "-d", "celery@$$HOSTNAME"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+
+  beat:
+    <<: *django-common
+    entrypoint: []
+    # Файл расписания кладётся в отдельный том: каталог с кодом недоступен
+    # приложению на запись, и по умолчанию beat пытался писать именно туда.
+    command:
+      ["celery", "-A", "config", "beat", "--loglevel", "info",
+       "-s", "/var/lib/celery/beat-schedule"]
+    volumes:
+      - celery_beat:/var/lib/celery
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  nginx:
+    image: nginx:1.27-alpine
+    environment:
+      DOMAIN: ${DOMAIN:?переменная обязательна}
+      DOMAIN_ALIAS: ${DOMAIN_ALIAS:-}
+    entrypoint: ["/entrypoint.sh"]
+    command: ["nginx", "-g", "daemon off;"]
+    volumes:
+      - ./compose/production/nginx/entrypoint.sh:/entrypoint.sh:ro
+      - ./compose/production/nginx/templates:/etc/nginx/templates:ro
+      - ./compose/production/nginx/proxy_params.conf:/etc/nginx/proxy_params.conf:ro
+      - static:/app/staticfiles:ro
+      - media:/app/media:ro
+      # Сертификаты и каталог проверки общие с certbot.
+      - letsencrypt:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1/healthz/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    # Проверка продления дважды в сутки — рекомендация Let's Encrypt.
+    # Сертификат живёт 90 дней, обновляется за 30 до истечения, поэтому
+    # пропуск нескольких проверок ничем не грозит.
+    entrypoint: >
+      sh -c "trap exit TERM;
+             while :; do
+               certbot renew --webroot --webroot-path=/var/www/certbot --quiet;
+               sleep 12h & wait $${!};
+             done"
+    depends_on:
+      - nginx
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  pg_data:
+  redis_data:
+  media:
+  static:
+  letsencrypt:
+  certbot_www:
+  celery_beat:

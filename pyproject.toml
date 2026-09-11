@@ -1,0 +1,121 @@
+[project]
+name = "modern-machinery"
+version = "0.1.0"
+description = "Бэкенд сайта филиала «Модерн Машинери Фар Ист» в Хабаровске"
+requires-python = ">=3.13"
+dependencies = [
+    "django>=5.2,<5.3",
+    "djangorestframework>=3.16",
+    "django-filter>=25.1",
+    "drf-spectacular>=0.28",
+    "django-treebeard>=4.7",
+    "django-cors-headers>=4.7",
+    "django-storages>=1.14",
+    "psycopg[binary]>=3.2",
+    "django-environ>=0.12",
+    "celery[redis]>=5.5",
+    "redis>=5.2",
+    "pillow>=11.1",
+    "gunicorn>=23.0",
+    "whitenoise>=6.9",
+    "sentry-sdk>=2.20",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.9",
+    "pytest>=8.3",
+    "pytest-django>=4.9",
+    "pytest-cov>=6.0",
+    "pytest-mock>=3.14",
+    "factory-boy>=3.3",
+    "freezegun>=1.5",
+    "pre-commit>=4.1",
+    "bandit>=1.8",
+    "pip-audit>=2.9",
+    "django-debug-toolbar>=5.0",
+]
+s3 = ["boto3>=1.36"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["*/migrations/*", "design"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",    # pycodestyle
+    "F",         # pyflakes
+    "I",         # isort
+    "N",         # pep8-naming
+    "UP",        # pyupgrade
+    "B",         # bugbear
+    "C4",        # comprehensions
+    "DJ",        # flake8-django
+    "S",         # bandit
+    "SIM",       # simplify
+    "T20",       # без print в проде
+    "PTH",       # pathlib
+    "RUF",       # ruff-специфичные
+]
+ignore = [
+    "RUF001",  # кириллица в строках — норма для этого проекта
+    "RUF002",
+    "RUF003",
+    "RUF012",  # изменяемые атрибуты класса без ClassVar — обычный стиль Django
+    "S101",    # assert разрешён (тесты)
+    "B008",    # вызовы в дефолтах аргументов — обычный паттерн DRF/Django
+]
+
+[tool.ruff.lint.per-file-ignores]
+"*/tests/*" = ["S105", "S106", "S311"]
+"*/factories.py" = ["S311"]
+"*/settings/*" = ["F403", "F405"]
+# Генератор демо-данных сознательно использует обычный random: нужна
+# воспроизводимость по seed, а не криптостойкость.
+"apps/imports/management/commands/*" = ["T20", "S311"]
+"apps/*/management/commands/*" = ["T20"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py", "tests.py"]
+# Порог покрытия зафиксирован в конфигурации, а не только в CI: локальный
+# прогон должен падать по тем же правилам, что и сборка.
+addopts = "--reuse-db --strict-markers -ra --cov --cov-report=term-missing --cov-fail-under=90"
+testpaths = ["apps", "tests"]
+filterwarnings = ["error::DeprecationWarning"]
+
+[tool.coverage.run]
+source = ["apps", "config"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "*/factories.py",
+    "config/wsgi.py",
+    "config/asgi.py",
+    # Настройки окружений не импортируются под тестовым модулем настроек,
+    # поэтому измерять их покрытие бессмысленно.
+    "config/settings/local.py",
+    "config/settings/production.py",
+    "manage.py",
+]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
+[tool.bandit]
+exclude_dirs = ["*/tests/*", "*/migrations/*", ".venv", "design"]

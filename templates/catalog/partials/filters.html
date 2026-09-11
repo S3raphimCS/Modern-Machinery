@@ -1,0 +1,162 @@
+{% comment %}
+  Панель фасетных фильтров.
+
+  Каждый раздел — самостоятельный сворачиваемый блок на элементе `details`:
+  он работает без JavaScript, доступен с клавиатуры и корректно читается
+  скринридером. По умолчанию разделы свёрнуты, раскрывается только тот, в
+  котором уже что-то выбрано, — иначе посетитель не увидит применённые условия.
+
+  Форма отправляется через HTMX и обновляет только список результатов, при этом
+  hx-push-url сохраняет параметры в адресной строке: ссылку с подобранными
+  фильтрами можно отправить коллеге.
+{% endcomment %}
+<form id="mm-filter-form" method="get" action="{% url 'catalog:machine-list' %}"
+      hx-get="{% url 'catalog:machine-list' %}"
+      hx-target="#mm-catalog-results"
+      hx-swap="innerHTML"
+      hx-push-url="true"
+      hx-trigger="change, submit">
+
+  <div class="mm-filters__head">
+    <span class="mm-filters__head-title">Фильтры</span>
+    {% if filters.active_count %}
+      <span class="mm-filters__badge">{{ filters.active_count }}</span>
+    {% endif %}
+  </div>
+
+  <details class="mm-filters__section" {% if facets.brands_selected %}open{% endif %}>
+    <summary class="mm-filters__summary">
+      <span class="mm-filters__summary-label">Бренд</span>
+      {% if facets.brands_selected %}
+        <span class="mm-filters__badge mm-filters__badge--small">{{ facets.brands_selected }}</span>
+      {% endif %}
+      <span class="mm-filters__chevron" aria-hidden="true"></span>
+    </summary>
+    <div class="mm-filters__body">
+      {% for brand in facets.brands %}
+        <label class="mm-filters__row{% if not brand.count and not brand.checked %} mm-filters__row--empty{% endif %}">
+          <span>
+            <input type="checkbox" name="brand" value="{{ brand.slug }}"
+                   {% if brand.checked %}checked{% endif %}
+                   {% if not brand.count and not brand.checked %}disabled{% endif %}>
+            {{ brand.name }}
+          </span>
+          <span class="mm-filters__count">{{ brand.count }}</span>
+        </label>
+      {% endfor %}
+    </div>
+  </details>
+
+  <details class="mm-filters__section" {% if facets.machine_types_selected %}open{% endif %}>
+    <summary class="mm-filters__summary">
+      <span class="mm-filters__summary-label">Тип техники</span>
+      {% if facets.machine_types_selected %}
+        <span class="mm-filters__badge mm-filters__badge--small">{{ facets.machine_types_selected }}</span>
+      {% endif %}
+      <span class="mm-filters__chevron" aria-hidden="true"></span>
+    </summary>
+    <div class="mm-filters__body">
+      {% for type in facets.machine_types %}
+        <label class="mm-filters__row{% if not type.count and not type.checked %} mm-filters__row--empty{% endif %}">
+          <span>
+            <input type="checkbox" name="type" value="{{ type.slug }}"
+                   {% if type.checked %}checked{% endif %}
+                   {% if not type.count and not type.checked %}disabled{% endif %}>
+            {{ type.name }}
+          </span>
+          <span class="mm-filters__count">{{ type.count }}</span>
+        </label>
+      {% endfor %}
+    </div>
+  </details>
+
+  {% for spec in facets.numeric %}
+    <details class="mm-filters__section" {% if spec.is_active %}open{% endif %}>
+      <summary class="mm-filters__summary">
+        <span class="mm-filters__summary-label">{{ spec.name }}{% if spec.unit %}, {{ spec.unit }}{% endif %}</span>
+        {% if spec.is_active %}
+          <span class="mm-filters__badge mm-filters__badge--dot" aria-label="Задан диапазон"></span>
+        {% endif %}
+        <span class="mm-filters__chevron" aria-hidden="true"></span>
+      </summary>
+      <div class="mm-filters__body">
+        <div class="mm-filters__range">
+          <input class="mm-input" type="number" step="any" name="spec_{{ spec.code }}_min"
+                 aria-label="{{ spec.name }} — от"
+                 placeholder="от {{ spec.min }}" value="{{ spec.value_min|default_if_none:'' }}">
+          <input class="mm-input" type="number" step="any" name="spec_{{ spec.code }}_max"
+                 aria-label="{{ spec.name }} — до"
+                 placeholder="до {{ spec.max }}" value="{{ spec.value_max|default_if_none:'' }}">
+        </div>
+      </div>
+    </details>
+  {% endfor %}
+
+  {% for spec in facets.options %}
+    <details class="mm-filters__section" {% if spec.selected_count %}open{% endif %}>
+      <summary class="mm-filters__summary">
+        <span class="mm-filters__summary-label">{{ spec.name }}</span>
+        {% if spec.selected_count %}
+          <span class="mm-filters__badge mm-filters__badge--small">{{ spec.selected_count }}</span>
+        {% endif %}
+        <span class="mm-filters__chevron" aria-hidden="true"></span>
+      </summary>
+      <div class="mm-filters__body">
+        {% for option in spec.values %}
+          <label class="mm-filters__row">
+            <span>
+              <input type="checkbox" name="spec_{{ spec.code }}" value="{{ option.code }}"
+                     {% if option.checked %}checked{% endif %}>
+              {{ option.name }}
+            </span>
+            <span class="mm-filters__count">{{ option.count }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </details>
+  {% endfor %}
+
+  {% comment %}
+    Одиночные переключатели и сортировка не сворачиваются: прятать за
+    заголовком единственную строку — лишний клик без выигрыша в месте.
+  {% endcomment %}
+  <div class="mm-filters__flat">
+    {% for spec in facets.booleans %}
+      <label class="mm-filters__row">
+        <span>
+          <input type="checkbox" name="spec_{{ spec.code }}" value="1"
+                 {% if spec.checked %}checked{% endif %}>
+          {{ spec.name }}
+        </span>
+        <span class="mm-filters__count">{{ spec.count }}</span>
+      </label>
+    {% endfor %}
+
+    <label class="mm-filters__row">
+      <span>
+        <input type="checkbox" name="in_stock" value="1"
+               {% if filters.in_stock_only %}checked{% endif %}>
+        Только в наличии
+      </span>
+    </label>
+
+    <div class="mm-filters__sort">
+      <label class="mm-filters__label" for="mm-sort">Сортировка</label>
+      <select class="mm-input" name="sort" id="mm-sort">
+        <option value="default">По умолчанию</option>
+        <option value="name" {% if filters.sort == 'name' %}selected{% endif %}>По названию</option>
+        <option value="price" {% if filters.sort == 'price' %}selected{% endif %}>Сначала дешевле</option>
+        <option value="-price" {% if filters.sort == '-price' %}selected{% endif %}>Сначала дороже</option>
+        <option value="new" {% if filters.sort == 'new' %}selected{% endif %}>Сначала новые</option>
+      </select>
+    </div>
+  </div>
+
+  <noscript>
+    <button class="mm-btn mm-btn--dark mm-btn--block" type="submit">Показать</button>
+  </noscript>
+  {% if filters.active_count %}
+    <a class="mm-btn mm-btn--dark mm-btn--block mm-filters__reset"
+       href="{% url 'catalog:machine-list' %}">Сбросить фильтры</a>
+  {% endif %}
+</form>

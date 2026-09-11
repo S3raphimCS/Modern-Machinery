@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load l10n %}
+{% block title %}Модерн Машинери в Хабаровске — контакты филиала{% endblock %}
+{% block meta_description %}Филиал «Модерн Машинери Фар Ист» в Хабаровске: адрес, телефоны, сотрудники отделов продаж, запчастей и сервиса.{% endblock %}
+
+{% block content %}
+  <script type="application/ld+json" nonce="{{ request.csp_nonce }}">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Модерн Машинери Фар Ист — филиал в {{ branch.city|escapejs }}",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "{{ branch.city|escapejs }}",
+      "streetAddress": "{{ branch.address|escapejs }}",
+      "postalCode": "{{ branch.postcode }}",
+      "addressCountry": "RU"
+    },
+    {% if branch.latitude %}
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "{{ branch.latitude|unlocalize }}",
+      "longitude": "{{ branch.longitude|unlocalize }}"
+    },
+    {% endif %}
+    "telephone": "{{ site_settings.main_phone }}",
+    "email": "{{ site_settings.main_email }}",
+    "openingHours": "{{ branch.work_hours }}",
+    "url": "{{ request.build_absolute_uri }}"
+  }
+  </script>
+
+  <section class="mm-hero">
+    <div class="mm-hero__eyebrow">Филиал в Хабаровске</div>
+    <h1 class="mm-hero__title">О компании</h1>
+    <p class="mm-hero__text">{{ branch.description }}</p>
+  </section>
+
+  <div class="mm-section">
+    <div class="mm-availability" style="max-width:640px;">
+      <div class="mm-availability__row"><span>Адрес</span><span>{{ branch.city }}, {{ branch.address }}</span></div>
+      <div class="mm-availability__row"><span>График</span><span>{{ branch.work_hours }}</span></div>
+      {% for contact in branch.contacts.all %}
+        <div class="mm-availability__row">
+          <span>{{ contact.get_kind_display }}{% if contact.label %} · {{ contact.label }}{% endif %}</span>
+          <span>{{ contact.display_value }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if branch.latitude and branch.longitude %}
+    <div class="mm-section">
+      <h2 class="mm-section__title">Как нас найти</h2>
+      {% comment %}
+        Виджет Яндекс.Карт вместо JS API: не требует ключа, не тянет скрипт на
+        каждую страницу и грузится только когда пользователь до него доскроллил.
+        Для страницы контактов этого достаточно.
+      {% endcomment %}
+      <div class="mm-map">
+        <iframe class="mm-map__frame"
+                src="https://yandex.ru/map-widget/v1/?ll={{ branch.longitude|unlocalize }}%2C{{ branch.latitude|unlocalize }}&z=16&pt={{ branch.longitude|unlocalize }},{{ branch.latitude|unlocalize }},pm2rdm&lang=ru_RU"
+                title="Карта проезда: {{ branch.city }}, {{ branch.address }}"
+                loading="lazy" allowfullscreen></iframe>
+      </div>
+      <p class="mm-map__note">
+        {{ branch.city }}, {{ branch.address }} · {{ branch.work_hours }}
+        <a href="https://yandex.ru/maps/?ll={{ branch.longitude|unlocalize }}%2C{{ branch.latitude|unlocalize }}&z=16&pt={{ branch.longitude|unlocalize }},{{ branch.latitude|unlocalize }}"
+           target="_blank" rel="noopener noreferrer">Открыть в Яндекс.Картах</a>
+      </p>
+    </div>
+  {% endif %}
+
+  <div class="mm-section">
+    <h2 class="mm-section__title">Сотрудники филиала</h2>
+    <div class="mm-grid">
+      {% for employee in branch.employees.all %}
+        {% if employee.is_published %}
+          <article class="mm-card"><div class="mm-card__body">
+            <div class="mm-card__cat">{{ employee.department.name|default:"Руководство" }}</div>
+            <div class="mm-card__name" style="font-size:17px;">{{ employee.full_name }}</div>
+            <p style="color:var(--mm-muted);font-size:14px;margin:6px 0 10px;">{{ employee.position }}</p>
+            {% for contact in employee.contacts.all %}
+              <div class="mm-card__spec">
+                <dt>{{ contact.get_kind_display }}</dt><dd>{{ contact.display_value }}</dd>
+              </div>
+            {% endfor %}
+          </div></article>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

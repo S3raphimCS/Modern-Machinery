@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Новости филиала в Хабаровске | Модерн Машинери{% endblock %}
+{% block content %}
+  <div class="mm-section">
+    <h1 class="mm-section__title">Новости</h1>
+    <div class="mm-grid">
+      {% for post in posts %}
+        <article class="mm-card"><div class="mm-card__body">
+          <div class="mm-card__cat">{{ post.published_at|date:"d.m.Y" }}</div>
+          <a class="mm-card__name" style="font-size:18px;" href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+          <p style="color:var(--mm-muted);font-size:15px;margin-top:10px;">{{ post.excerpt }}</p>
+        </div></article>
+      {% empty %}
+        <p class="mm-empty">Новостей пока нет.</p>
+      {% endfor %}
+    </div>
+    {% include "catalog/partials/pagination.html" %}
+  </div>
+{% endblock %}

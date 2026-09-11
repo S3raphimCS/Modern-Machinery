@@ -1,0 +1,33 @@
+# Проверки перед коммитом. Тот же ruff, что и в CI, — расхождений быть не должно.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+        args: ["--allow-multiple-documents"]
+      - id: end-of-file-fixer
+        exclude: ^(design/|static/fonts/|static/js/htmx.min.js)
+      - id: trailing-whitespace
+        exclude: ^(design/|static/js/htmx.min.js)
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.10
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      # Забытая миграция ломает деплой, а не тесты, поэтому проверяется здесь.
+      - id: django-check-migrations
+        name: Проверка отсутствия забытых миграций
+        entry: uv run python manage.py makemigrations --check --dry-run
+        language: system
+        pass_filenames: false
+        files: ^apps/.*models.*\.py$

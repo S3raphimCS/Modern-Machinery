@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Политика конфиденциальности{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,follow">{% endblock %}
+{% block content %}
+  <div class="mm-section">
+    <h1 class="mm-section__title">Политика конфиденциальности</h1>
+    <div class="mm-prose">
+      {% if page %}{{ page.body|linebreaks }}{% else %}
+        <p>Персональные данные обрабатываются в соответствии с Федеральным законом
+        № 152-ФЗ «О персональных данных».</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
