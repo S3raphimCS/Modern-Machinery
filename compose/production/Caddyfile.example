@@ -1,0 +1,22 @@
+# Пример блока для существующего Caddy.
+#
+# Добавьте в /etc/caddy/Caddyfile рядом с уже описанными сайтами и выполните
+# `sudo systemctl reload caddy`. Caddy сам получит и будет продлевать
+# сертификат Let's Encrypt — отдельный certbot не нужен.
+
+s3raphim-dev.ru, www.s3raphim-dev.ru {
+	encode zstd gzip
+
+	reverse_proxy 127.0.0.1:8080 {
+		# Приложение считает по этому адресу лимит заявок и пишет его в заявку.
+		header_up X-Real-IP {remote_host}
+		# Без этого Django решит, что соединение незашифровано, и отправит
+		# браузер на https — то есть обратно сюда. Получится петля.
+		header_up X-Forwarded-Proto {scheme}
+	}
+
+	log {
+		output file /var/log/caddy/s3raphim-dev.ru.log
+		format json
+	}
+}

@@ -259,7 +259,58 @@ EMAIL_URL=smtp://пользователь:пароль@smtp.example.ru:587/?tls=
 sudo systemctl enable docker
 ```
 
+## Работа за существующим обратным прокси
+
+Если порты 80 и 443 уже занял другой сервер — Caddy, Traefik, системный
+nginx — и трогать его нельзя, проект можно поставить позади него. Тогда
+сертификатом занимается внешний прокси, а наш nginx слушает только localhost:
+
+```bash
+docker compose -f docker-compose.prod.yml -f docker-compose.behind-proxy.yml up -d
+```
+
+Наружу ничего не публикуется, поднимается всё кроме certbot. Пример блока для
+Caddy — в [`compose/production/Caddyfile.example`](../compose/production/Caddyfile.example).
+
+Внешний прокси обязан передавать `X-Forwarded-Proto`. Без этого заголовка
+Django считает соединение незашифрованным и отправляет браузер на https, где
+его встречает тот же прокси, — получается бесконечная переадресация. Заголовок
+принимается только от соседа по машине или по внутренней сети: из интернета
+подделать его нельзя.
+
 ## Если что-то пошло не так
+
+**Контейнер `web` падает, а ошибки не видно.** `make prod-up` запускает стек в
+фоне, поэтому ошибка остаётся в журнале:
+
+```bash
+docker compose -f docker-compose.prod.yml logs web --tail 50
+```
+
+Либо запустить на переднем плане и увидеть вывод сразу:
+
+```bash
+docker compose -f docker-compose.prod.yml up web
+```
+
+Частые причины:
+
+| В журнале | Причина | Что делать |
+|---|---|---|
+| `Set the DJANGO_SECRET_KEY environment variable` | нет `.env` или в нём пустой ключ | `cp .env.example .env` и задать ключ |
+| `ImproperlyConfigured: Set the DJANGO_ALLOWED_HOSTS` | не заполнен список доменов | вписать домен в `.env` |
+| `База данных не ответила за 60 секунд` | контейнер базы не поднялся | `docker compose -f docker-compose.prod.yml logs db` |
+| `password authentication failed` | `DATABASE_URL` разошёлся с `POSTGRES_USER`/`POSTGRES_PASSWORD` | привести к одним значениям |
+| `operator class "gin_trgm_ops" does not exist` | старый образ без исправления миграций | `git pull && make prod-up` |
+| `variable is not set` при запуске | не заданы `POSTGRES_*` или `DOMAIN` | заполнить `.env` |
+
+Проверить, что окружение вообще прочиталось:
+
+```bash
+docker compose -f docker-compose.prod.yml config | grep -E "DJANGO_ALLOWED_HOSTS|DATABASE_URL|DOMAIN"
+```
+
+
 
 **`make tls-issue` жалуется на проверку домена.** Убедитесь, что снаружи
 открывается `http://s3raphim-dev.ru/.well-known/acme-challenge/проба` — создайте
