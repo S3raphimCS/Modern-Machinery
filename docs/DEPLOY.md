@@ -31,13 +31,99 @@ dig +short www.s3raphim-dev.ru A    # если планируете www
 docker --version && docker compose version
 ```
 
+## Если на сервере уже что-то запущено
+
+Порты 80 и 443 должен занять только этот проект. Пока их держит старый
+контейнер или системный веб-сервер, nginx не поднимется, а сертификат не
+выпустится.
+
+### Сначала посмотреть, что там есть
+
+Ничего не останавливайте, пока не увидите картину целиком:
+
+```bash
+docker ps -a                      # все контейнеры, включая остановленные
+docker compose ls                 # проекты compose и их файлы
+docker volume ls                  # тома с данными
+sudo ss -tulpn | grep -E ':(80|443|5432|6379|8000)\s'   # кто занял порты
+```
+
+Последняя команда важнее прочих: она покажет и контейнеры, и системные
+службы вроде nginx или apache, установленные мимо Docker.
+
+### Остановить, не потеряв данные
+
+**Если старый проект поднимался через compose**, останавливайте его же
+командой — так уйдут и контейнеры, и сеть:
+
+```bash
+docker compose -f /путь/к/старому/docker-compose.yml down
+```
+
+Без `-v`. Ключ `-v` удаляет тома вместе с базой, и данные не вернуть.
+
+**Если контейнеры запускались поодиночке:**
+
+```bash
+docker stop $(docker ps -q)              # остановить все работающие
+docker update --restart=no $(docker ps -aq)   # снять автозапуск
+```
+
+Вторая команда и есть ответ на «чтобы они не запускались»: без неё Docker
+поднимет их обратно после перезагрузки сервера.
+
+**Если порт держит системная служба:**
+
+```bash
+sudo systemctl stop nginx && sudo systemctl disable nginx
+sudo systemctl stop apache2 && sudo systemctl disable apache2
+```
+
+### Проверить, что порты свободны
+
+```bash
+sudo ss -tulpn | grep -E ':(80|443)\s' || echo "порты свободны"
+```
+
+Пока эта команда что-то выводит, запускать проект рано.
+
+### Как вернуть старое обратно
+
+Контейнеры и тома на месте — ничего не удалялось:
+
+```bash
+docker start <имя-контейнера>
+docker update --restart=unless-stopped <имя-контейнера>
+```
+
+### Освободить место, если его мало
+
+Только после того, как убедились, что старое больше не нужно. Команда не
+трогает тома, но удаляет остановленные контейнеры и неиспользуемые образы:
+
+```bash
+docker system df                  # сначала посмотреть, сколько занято
+docker container prune            # удалить остановленные контейнеры
+docker image prune -a             # удалить образы, не привязанные к контейнерам
+```
+
+`docker system prune --volumes` не используйте: он удаляет тома, в том числе
+с базами данных.
+
 ## Установка
 
 ```bash
-git clone <адрес репозитория> modern-machinery
+git clone https://github.com/S3raphimCS/Modern-Machinery.git modern-machinery
 cd modern-machinery
 cp .env.example .env
 ```
+
+Если репозиторий закрытый, понадобится доступ: либо токен при клонировании по
+https, либо ключ на сервере и адрес `git@github.com:S3raphimCS/Modern-Machinery.git`.
+
+`make` на сервере может не оказаться. Тогда либо поставьте его
+(`sudo apt install make`), либо используйте команды `docker compose` напрямую —
+они приведены ниже рядом с каждой целью.
 
 ### Настройка окружения
 
@@ -73,6 +159,8 @@ SITE_URL=https://s3raphim-dev.ru
 
 ```bash
 make prod-up
+# без make:
+# docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 Стек поднимется, применит миграции и соберёт статику. nginx увидит, что
@@ -116,17 +204,25 @@ curl -I https://s3raphim-dev.ru/
 
 ### Наполнение
 
-```bash
-make prod-up                                          # если ещё не запущен
-docker compose -f docker-compose.prod.yml exec web \
-  python manage.py createsuperuser
-```
-
-Демонстрационные данные (88 машин, 240 запчастей, 15 услуг):
+Демонстрационные данные — 88 машин с характеристиками и изображениями,
+240 запчастей, 15 услуг, 8 посадочных подборок:
 
 ```bash
 docker compose -f docker-compose.prod.yml exec web python manage.py seed_demo
 ```
+
+Администратор сайта:
+
+```bash
+docker compose -f docker-compose.prod.yml exec web \
+  python manage.py createsuperuser
+```
+
+Команда спросит логин, почту и пароль. Пароль вводится скрыто и в историю
+командной строки не попадает — в отличие от способа с аргументами.
+
+Учётка `admin/admin` из `make dev-superuser` в production намеренно не
+создаётся: команда отказывается работать при `DEBUG=False`.
 
 ## После запуска
 
