@@ -136,7 +136,13 @@ services:
       DOMAIN: ${DOMAIN:?переменная обязательна}
       DOMAIN_ALIAS: ${DOMAIN_ALIAS:-}
     entrypoint: ["/entrypoint.sh"]
-    command: ["nginx", "-g", "daemon off;"]
+    # Раз в шесть часов nginx перечитывает конфигурацию и подхватывает
+    # обновлённый сертификат. Без этого certbot продлил бы его в фоне, а
+    # посетители продолжали бы получать старый — и однажды просроченный:
+    # сам по себе nginx перечитывать файлы сертификата не станет.
+    command:
+      ["sh", "-c",
+       "while :; do sleep 6h; nginx -s reload; done & exec nginx -g 'daemon off;'"]
     volumes:
       - ./compose/production/nginx/entrypoint.sh:/entrypoint.sh:ro
       - ./compose/production/nginx/templates:/etc/nginx/templates:ro
