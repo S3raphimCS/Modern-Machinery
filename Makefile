@@ -164,6 +164,9 @@ tls-issue:  ## Выпустить сертификат Let's Encrypt и вклю
 .PHONY: tls-issue-dns
 tls-issue-dns:  ## Выпустить сертификат через DNS reg.ru (когда порт 80 закрыт)
 	@test -f secrets/regru.ini || (echo "Нет secrets/regru.ini — скопируйте из secrets/regru.ini.example" && exit 1)
+	@echo "IP, с которого пойдут запросы к API reg.ru: $$(curl -s --max-time 5 https://api.ipify.org || echo 'определить не удалось')"
+	@echo "Этот адрес должен быть в списке разрешённых в личном кабинете reg.ru."
+	@echo
 	@set -a && . ./.env && set +a && \
 	test -n "$$DOMAIN" || (echo "В .env не задан DOMAIN" && exit 1); \
 	echo "Выпускаю сертификат для $$DOMAIN через подтверждение в DNS"; \
