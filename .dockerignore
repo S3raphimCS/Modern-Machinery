@@ -30,6 +30,7 @@ media
 staticfiles
 backups
 celerybeat-schedule*
+secrets
 *.sqlite3
 *.log
 

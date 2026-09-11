@@ -169,17 +169,26 @@ services:
         max-file: "5"
 
   certbot:
-    image: certbot/certbot:latest
+    build:
+      context: .
+      dockerfile: compose/production/certbot/Dockerfile
+    image: modern-machinery-certbot:latest
     volumes:
       - letsencrypt:/etc/letsencrypt
       - certbot_www:/var/www/certbot
+      # Учётные данные reg.ru для подтверждения через DNS. Файл появляется
+      # только если выбран этот способ; при подтверждении по HTTP не нужен.
+      - ./secrets:/run/secrets:ro
     # Проверка продления дважды в сутки — рекомендация Let's Encrypt.
     # Сертификат живёт 90 дней, обновляется за 30 до истечения, поэтому
     # пропуск нескольких проверок ничем не грозит.
+    # Параметры подтверждения certbot запоминает в конфигурации сертификата,
+    # поэтому продлению не нужно повторять их. Так один и тот же контейнер
+    # обслуживает и подтверждение по HTTP, и подтверждение через DNS.
     entrypoint: >
       sh -c "trap exit TERM;
              while :; do
-               certbot renew --webroot --webroot-path=/var/www/certbot --quiet;
+               certbot renew --quiet --deploy-hook 'touch /etc/letsencrypt/.renewed';
                sleep 12h & wait $${!};
              done"
     depends_on:

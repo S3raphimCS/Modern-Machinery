@@ -161,10 +161,27 @@ tls-issue:  ## Выпустить сертификат Let's Encrypt и вклю
 	$(COMPOSE_PROD) up -d --force-recreate nginx
 	@echo "Готово. Проверьте: https://$$(grep '^DOMAIN=' .env | cut -d= -f2)/"
 
+.PHONY: tls-issue-dns
+tls-issue-dns:  ## Выпустить сертификат через DNS reg.ru (когда порт 80 закрыт)
+	@test -f secrets/regru.ini || (echo "Нет secrets/regru.ini — скопируйте из secrets/regru.ini.example" && exit 1)
+	@set -a && . ./.env && set +a && \
+	test -n "$$DOMAIN" || (echo "В .env не задан DOMAIN" && exit 1); \
+	echo "Выпускаю сертификат для $$DOMAIN через подтверждение в DNS"; \
+	$(COMPOSE_PROD) run --rm --entrypoint certbot certbot certonly \
+		--authenticator dns-regru \
+		--dns-regru-credentials /run/secrets/regru.ini \
+		--dns-regru-propagation-seconds 300 \
+		-d "$$DOMAIN" $${DOMAIN_ALIAS:+-d "$$DOMAIN_ALIAS"} \
+		--email "$$CERTBOT_EMAIL" --agree-tos --no-eff-email \
+		$$([ "$$CERTBOT_STAGING" = "1" ] && echo --staging) \
+		--non-interactive
+	$(COMPOSE_PROD) up -d --force-recreate nginx
+	@echo "Готово. Проверьте: https://$$(grep '^DOMAIN=' .env | cut -d= -f2)/"
+
 .PHONY: tls-renew
 tls-renew:  ## Продлить сертификат вручную (обычно это делает certbot сам)
-	$(COMPOSE_PROD) run --rm --entrypoint certbot certbot renew \
-		--webroot --webroot-path=/var/www/certbot
+	# Способ подтверждения certbot помнит сам, повторять его не нужно.
+	$(COMPOSE_PROD) run --rm --entrypoint certbot certbot renew
 	$(COMPOSE_PROD) exec nginx nginx -s reload
 
 .PHONY: tls-status
