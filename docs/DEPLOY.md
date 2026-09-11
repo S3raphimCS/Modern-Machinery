@@ -303,6 +303,24 @@ docker compose -f docker-compose.prod.yml up web
 | `password authentication failed` | `DATABASE_URL` разошёлся с `POSTGRES_USER`/`POSTGRES_PASSWORD` | привести к одним значениям |
 | `operator class "gin_trgm_ops" does not exist` | старый образ без исправления миграций | `git pull && make prod-up` |
 | `variable is not set` при запуске | не заданы `POSTGRES_*` или `DOMAIN` | заполнить `.env` |
+| `Invalid HTTP_HOST header: '127.0.0.1:8000'` | старый образ: проверка живости не представлялась доменом | `git pull && make prod-up` |
+
+**Контейнер «unhealthy», хотя сайт работает.** Проверка живости обращается к
+приложению изнутри и представляется доменом из `DOMAIN`. Если он расходится с
+`DJANGO_ALLOWED_HOSTS`, Django отвечает 400 и контейнер считается сломанным.
+Значения должны совпадать:
+
+```bash
+grep -E "^(DOMAIN|DJANGO_ALLOWED_HOSTS)=" .env
+```
+
+Посмотреть, что именно вернула последняя проверка:
+
+```bash
+docker inspect --format '{{range .State.Health.Log}}{{.Output}}{{end}}' \
+  modern-machinery-prod-web-1
+```
+
 
 Проверить, что окружение вообще прочиталось:
 

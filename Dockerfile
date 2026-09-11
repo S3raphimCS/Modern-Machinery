@@ -57,8 +57,13 @@ USER app
 
 EXPOSE 8000
 
+# Проверка живости обращается к приложению изнутри контейнера, но обязана
+# представиться настоящим доменом. Django сверяет заголовок Host со списком
+# ALLOWED_HOSTS и отвечает 400 на «127.0.0.1:8000» — проверка падала бы на
+# любом сервере, где в списке указан рабочий домен, а не localhost.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl --fail --silent http://127.0.0.1:8000/healthz/ || exit 1
+    CMD curl --fail --silent --header "Host: ${DOMAIN:-localhost}" \
+        http://127.0.0.1:8000/healthz/ || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["gunicorn", "config.wsgi:application", \

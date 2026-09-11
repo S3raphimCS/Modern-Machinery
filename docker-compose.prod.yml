@@ -93,7 +93,12 @@ services:
     volumes:
       - media:/app/media
     healthcheck:
-      test: ["CMD", "celery", "-A", "config", "inspect", "ping", "-d", "celery@$$HOSTNAME"]
+      # Форма CMD-SHELL обязательна: в exec-форме переменная не раскрывается,
+      # и celery искал бы узел с именем «celery@$HOSTNAME» буквально —
+      # проверка падала бы на исправном воркере.
+      test:
+        ["CMD-SHELL",
+         "celery -A config inspect ping -d celery@$$(hostname) | grep -q pong"]
       interval: 60s
       timeout: 10s
       retries: 3
@@ -111,6 +116,13 @@ services:
     command:
       ["celery", "-A", "config", "beat", "--loglevel", "info",
        "-s", "/var/lib/celery/beat-schedule"]
+    healthcheck:
+      # Из образа сюда приезжает проверка по HTTP, но веб-сервера в этом
+      # контейнере нет — она обречена падать и метила бы исправный планировщик
+      # как сломанный. Отдельной проверки у beat нет: в отличие от воркера, он
+      # не отвечает на inspect ping. Признак жизни здесь — сам процесс, а его
+      # падение и так поднимает перезапуск контейнера.
+      disable: true
     volumes:
       - celery_beat:/var/lib/celery
     deploy:
@@ -142,7 +154,11 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1/healthz/"]
+      # Тот же случай, что и у приложения: без заголовка Host запрос уходит
+      # с адресом 127.0.0.1, и Django отклоняет его как посторонний.
+      test:
+        ["CMD-SHELL",
+         "wget --spider -q --header=\"Host: $$DOMAIN\" http://127.0.0.1/healthz/"]
       interval: 30s
       timeout: 5s
       retries: 3
