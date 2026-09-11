@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Запчасти Komatsu в Хабаровске — оригинальные детали со склада{% endblock %}
+{% block meta_description %}Оригинальные запчасти Komatsu, фильтры, ходовая часть, РВД и шины в Хабаровске. Поиск по артикулу, наличие на складе, доставка на объект.{% endblock %}
+
+{% block content %}
+  <section class="mm-hero">
+    <div class="mm-hero__eyebrow">Склад в Хабаровске</div>
+    <h1 class="mm-hero__title">Запасные части</h1>
+    <p class="mm-hero__text">
+      Оригинальные детали Komatsu, ходовая часть, фильтры, ковши, гидромолоты,
+      РВД и шины. Введите артикул в любом написании — найдём.
+    </p>
+  </section>
+
+  <div class="mm-section">
+    <form class="mm-search" style="max-width:520px;margin-bottom:22px;"
+          hx-get="{% url 'parts:part-list' %}" hx-target="#mm-parts-results"
+          hx-swap="innerHTML" hx-push-url="true" hx-trigger="submit, keyup changed delay:400ms from:input[name='q']">
+      <input class="mm-input" type="search" name="q" value="{{ query }}"
+             placeholder="Артикул или название, например 600-311-3750">
+      {% if active_category %}<input type="hidden" name="category" value="{{ active_category }}">{% endif %}
+    </form>
+
+    <div class="mm-chips">
+      <a class="mm-chip {% if not active_category %}mm-chip--active{% endif %}"
+         href="{% url 'parts:part-list' %}">Все</a>
+      {% for category in categories %}
+        <a class="mm-chip {% if active_category == category.slug %}mm-chip--active{% endif %}"
+           href="?category={{ category.slug }}{% if query %}&q={{ query }}{% endif %}">{{ category.name }}</a>
+      {% endfor %}
+    </div>
+
+    <div id="mm-parts-results">
+      {% include "parts/partials/part_results.html" %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% if parts %}
+  <div class="mm-catalog__count" style="margin-bottom:12px;">Найдено позиций: {{ total }}</div>
+
+  {# Десктоп: таблица, как в макете. #}
+  <div class="mm-table-wrap">
+    <table class="mm-table">
+      <thead>
+        <tr><th>Наименование</th><th>Артикул</th><th>Наличие</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for part in parts %}
+          <tr>
+            <td>
+              <a href="{{ part.get_absolute_url }}" style="font-family:var(--mm-font-display);font-weight:600;color:var(--mm-ink);">{{ part.name }}</a>
+              <div style="font-size:13px;color:var(--mm-muted);margin-top:3px;">{{ part.category.name }}</div>
+            </td>
+            <td class="mm-table__article">{{ part.article }}</td>
+            <td>{% include "parts/partials/stock_status.html" %}</td>
+            <td>
+              <a class="mm-btn {% if part.stock_status == 'on_order' %}mm-btn--dark{% else %}mm-btn--primary{% endif %}"
+                 href="#" hx-get="{% url 'content:lead-form-modal' %}?type=parts"
+                 hx-target="#mm-modal-root" hx-swap="innerHTML">
+                {% if part.stock_status == 'on_order' %}Под заказ{% else %}Запросить{% endif %}
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {# Мобильный: карточки вместо таблицы. #}
+  <div class="mm-cards-mobile">
+    {% for part in parts %}
+      <article class="mm-card"><div class="mm-card__body">
+        <a class="mm-card__name" style="font-size:16px;" href="{{ part.get_absolute_url }}">{{ part.name }}</a>
+        <div class="mm-table__article" style="margin-top:4px;">{{ part.article }}</div>
+        <div style="margin-top:10px;">{% include "parts/partials/stock_status.html" %}</div>
+        <div class="mm-card__actions">
+          <a class="mm-btn mm-btn--primary mm-btn--block" href="#"
+             hx-get="{% url 'content:lead-form-modal' %}?type=parts"
+             hx-target="#mm-modal-root" hx-swap="innerHTML">Запросить</a>
+        </div>
+      </div></article>
+    {% endfor %}
+  </div>
+
+  {% include "catalog/partials/pagination.html" with querystring=request.GET.urlencode %}
+{% else %}
+  <div class="mm-empty">
+    Ничего не найдено. Проверьте артикул или
+    <a href="#" hx-get="{% url 'content:lead-form-modal' %}?type=parts"
+       hx-target="#mm-modal-root" hx-swap="innerHTML">попросите подобрать деталь</a>.
+  </div>
+{% endif %}

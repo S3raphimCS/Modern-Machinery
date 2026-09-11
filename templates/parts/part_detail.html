@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ part.article }} — {{ part.name }} | Запчасти в Хабаровске{% endblock %}
+{% block meta_description %}{{ part.name }}, артикул {{ part.article }}. Наличие на складе в Хабаровске, применимость к технике, доставка на объект.{% endblock %}
+
+{% block content %}
+  <nav class="mm-breadcrumbs">
+    <a href="{% url 'parts:part-list' %}">Запчасти</a> ›
+    <a href="{% url 'parts:part-list' %}?category={{ part.category.slug }}">{{ part.category.name }}</a> ›
+    <span>{{ part.article }}</span>
+  </nav>
+
+  <div class="mm-product">
+    <div>
+      <h1 class="mm-product__title">{{ part.name }}</h1>
+      <div class="mm-product__meta">Артикул {{ part.article }} · {{ part.brand.name }}</div>
+      <div class="mm-prose" style="margin-top:18px;">{{ part.description|linebreaks }}</div>
+
+      {% if part.applicability.all %}
+        <h2 class="mm-section__title" style="font-size:18px;margin-top:26px;">Подходит к технике</h2>
+        <ul style="padding-left:18px;line-height:1.9;">
+          {% for item in part.applicability.all %}
+            <li><a href="{{ item.machine.get_absolute_url }}">{{ item.machine }}</a>{% if item.note %} — {{ item.note }}{% endif %}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <div>
+      <div class="mm-availability">
+        {% for stock in part.stocks.all %}
+          <div class="mm-availability__row">
+            <span>Склад · {{ stock.branch.city }}</span>
+            <span>{% include "parts/partials/stock_status.html" %}</span>
+          </div>
+          {% if stock.lead_time %}
+            <div class="mm-availability__row"><span>Срок поставки</span><span>{{ stock.lead_time }}</span></div>
+          {% endif %}
+        {% empty %}
+          <div class="mm-availability__row"><span>Наличие</span><span>Уточнить наличие</span></div>
+        {% endfor %}
+        {% if part.weight_kg %}
+          <div class="mm-availability__row"><span>Вес</span><span>{{ part.weight_kg }} кг</span></div>
+        {% endif %}
+        <div class="mm-availability__row">
+          <span>Тип</span><span>{% if part.is_original %}Оригинальная деталь{% else %}Аналог{% endif %}</span>
+        </div>
+      </div>
+      {% include "leads/partials/form.html" with lead_form=lead_form lead_type='parts' %}
+    </div>
+  </div>
+{% endblock %}

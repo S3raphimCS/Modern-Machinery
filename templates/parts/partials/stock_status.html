@@ -1,0 +1,9 @@
+{% if part.stock_status == 'in_stock' %}
+  <span class="mm-status mm-status--in"><span class="mm-status__dot"></span>В наличии</span>
+{% elif part.stock_status == 'low' %}
+  <span class="mm-status mm-status--low"><span class="mm-status__dot"></span>Мало</span>
+{% elif part.stock_status == 'on_order' %}
+  <span class="mm-status mm-status--order"><span class="mm-status__dot"></span>Под заказ</span>
+{% else %}
+  <span class="mm-status mm-status--none"><span class="mm-status__dot"></span>Уточнить наличие</span>
+{% endif %}
