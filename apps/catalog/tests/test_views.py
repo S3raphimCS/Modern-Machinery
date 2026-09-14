@@ -136,3 +136,40 @@ def test_total_badge_counts_all_conditions(client, machine_factory_set, brand):
 def test_reset_link_hidden_without_filters(client, machine_factory_set):
     content = client.get(reverse("catalog:machine-list")).content.decode()
     assert "Сбросить фильтры" not in content
+
+
+def test_card_image_links_to_machine(client, machine_factory_set):
+    """По картинке в плитке можно перейти на карточку.
+
+    Попадать по строке названия неудобно: картинка — самая крупная цель
+    в плитке, и клик по ней ожидаем.
+    """
+    machine = machine_factory_set[0]
+    content = client.get(reverse("catalog:machine-list")).content.decode()
+
+    assert f'<a class="mm-card__media" href="{machine.get_absolute_url()}"' in content
+
+
+def test_card_image_link_is_skipped_by_keyboard(client, machine_factory_set):
+    """Ссылка на картинке не дублирует ссылку на названии для клавиатуры.
+
+    Обе ведут в одно место. Без исключения из обхода пользователь клавиатуры
+    и скринридера проходил бы каждую карточку дважды.
+    """
+    content = client.get(reverse("catalog:machine-list")).content.decode()
+
+    # Сравнивается именно пара атрибутов: отдельный tabindex="-1" есть и у
+    # поля-ловушки в форме заявки, которая присутствует на каждой странице.
+    cards = content.count('<a class="mm-card__media"')
+    skipped = content.count('tabindex="-1" aria-hidden="true"')
+
+    assert cards > 0
+    assert cards == skipped
+
+
+def test_card_name_remains_a_link(client, machine_factory_set):
+    """Ссылка на названии остаётся: именно её читает скринридер."""
+    machine = machine_factory_set[0]
+    content = client.get(reverse("catalog:machine-list")).content.decode()
+
+    assert f'<a class="mm-card__name" href="{machine.get_absolute_url()}"' in content

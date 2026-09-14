@@ -311,6 +311,9 @@ textarea.mm-input { min-height: 96px; resize: vertical; }
   position: relative; height: clamp(150px, 20cqi, 190px);
   background: repeating-linear-gradient(135deg, #ededed 0 9px, #f7f7f7 9px 18px);
   display: flex; align-items: center; justify-content: center; overflow: hidden;
+  /* Блок — ссылка на карточку техники: картинка это самая крупная цель
+     в плитке, и попадать по ней удобнее, чем по строке названия. */
+  color: inherit; text-decoration: none; cursor: pointer;
 }
 .mm-card__media img {
   width: 100%; height: 100%; object-fit: cover; transition: transform .3s ease;

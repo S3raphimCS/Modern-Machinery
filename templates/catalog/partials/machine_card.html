@@ -1,5 +1,13 @@
 <article class="mm-card">
-  <div class="mm-card__media">
+  {% comment %}
+    Изображение ведёт на карточку: попадать по названию неудобно, а картинка
+    — самая крупная цель в плитке. Ссылка убрана из порядка обхода клавишей
+    Tab и из дерева доступности: она ведёт туда же, куда соседняя ссылка с
+    названием, и без этого пользователь клавиатуры или скринридера проходил
+    бы одну и ту же карточку дважды.
+  {% endcomment %}
+  <a class="mm-card__media" href="{{ machine.get_absolute_url }}"
+     tabindex="-1" aria-hidden="true">
     {% if machine.main_image %}
       {# Превью в WebP, исходник — запасной вариант для старых браузеров. #}
       <picture>
@@ -18,7 +26,7 @@
     {% elif machine.stock_status == 'on_order' %}
       <span class="mm-badge mm-badge--order">Под заказ</span>
     {% endif %}
-  </div>
+  </a>
   <div class="mm-card__body">
     <div class="mm-card__cat">{{ machine.machine_type.name }} · {{ machine.brand.name }}</div>
     <a class="mm-card__name" href="{{ machine.get_absolute_url }}">{{ machine.name }}</a>
