@@ -43,10 +43,28 @@ def match_rule(lead: Lead) -> LeadRoutingRule | None:
 def resolve_recipients(lead: Lead) -> tuple[LeadRoutingRule | None, list[str]]:
     """Определяет правило и список адресов получателей.
 
-    Если ни одно правило не подошло, письмо уходит на резервный адрес: заявка,
-    которая никуда не ушла, — худший из возможных исходов.
+    Адреса берутся из двух источников и объединяются:
+
+    1. Правило маршрутизации — общие ящики отделов вроде `parts@`. Их держит
+       и меняет менеджер, не трогая учётные записи.
+    2. Сотрудники с включённой галочкой «Получать заявки на почту». Так
+       руководитель подписывается на поток сам, без правки правил.
+
+    Если не нашлось ни того, ни другого, письмо уходит на резервный адрес:
+    заявка, которая никуда не ушла, — худший из возможных исходов.
     """
+    from django.contrib.auth import get_user_model
+
     rule = match_rule(lead)
-    if rule and rule.emails:
-        return rule, list(rule.emails)
-    return rule, [settings.LEADS_FALLBACK_EMAIL]
+    department = rule.department if rule else None
+
+    recipients: list[str] = list(rule.emails) if rule and rule.emails else []
+    recipients += (
+        get_user_model().objects.lead_recipients(department).values_list("email", flat=True)
+    )
+
+    # Один человек может быть и в списке отдела, и подписан лично: письмо
+    # должно прийти один раз. Порядок сохраняем — первым идёт ящик отдела.
+    unique = list(dict.fromkeys(address for address in recipients if address))
+
+    return rule, unique or [settings.LEADS_FALLBACK_EMAIL]

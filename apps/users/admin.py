@@ -6,13 +6,28 @@ from .models import User
 
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):
-    list_display = ["username", "email", "get_full_name", "department", "is_staff"]
-    list_filter = ["is_staff", "is_superuser", "is_active", "department"]
+    list_display = [
+        "username",
+        "email",
+        "get_full_name",
+        "department",
+        "receives_lead_emails",
+        "is_staff",
+    ]
+    list_filter = ["receives_lead_emails", "is_staff", "is_superuser", "is_active", "department"]
     search_fields = ["username", "email", "first_name", "last_name"]
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         ("Личные данные", {"fields": ("first_name", "last_name", "email", "phone", "position")}),
-        ("Работа", {"fields": ("department",)}),
+        (
+            "Работа",
+            {
+                "fields": ("department", "receives_lead_emails"),
+                "description": "Получатель заявок обязан иметь адрес почты: "
+                "иначе письмо отправить некуда, а галочка "
+                "выглядит рабочей.",
+            },
+        ),
         (
             "Права",
             {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")},
