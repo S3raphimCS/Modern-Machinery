@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import logging
+from urllib.parse import urljoin
 
 from celery import shared_task
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils import timezone
 
 from .models import Lead, LeadEvent
@@ -34,16 +36,31 @@ def send_lead_notification(self, lead_id: int, recipients: list[str]) -> str:
         recipients = [settings.LEADS_FALLBACK_EMAIL]
 
     subject = f"Заявка с сайта: {lead.get_type_display()} — {lead.subject_title}"
-    body = render_to_string("leads/email/notification.txt", {"lead": lead})
+    context = {
+        "lead": lead,
+        "subject": subject,
+        # Ссылка собирается здесь, а не в шаблоне: у фоновой задачи нет запроса,
+        # из которого можно было бы взять адрес сайта.
+        "admin_url": urljoin(
+            settings.SITE_URL,
+            reverse("admin:leads_lead_change", args=[lead.pk]),
+        ),
+    }
+    text_body = render_to_string("leads/email/notification.txt", context)
+    html_body = render_to_string("leads/email/notification.html", context)
 
     try:
-        send_mail(
+        # Обе версии в одном письме: клиент показывает оформленную, а текстовую
+        # используют почтовые фильтры и те, кто отключил HTML. Письмо без
+        # текстовой части заметно чаще уходит в спам.
+        message = EmailMultiAlternatives(
             subject=subject,
-            message=body,
+            body=text_body,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=recipients,
-            fail_silently=False,
+            to=recipients,
         )
+        message.attach_alternative(html_body, "text/html")
+        message.send(fail_silently=False)
     except Exception as exc:
         LeadEvent.objects.create(
             lead=lead, kind=LeadEvent.Kind.EMAIL_FAILED, comment=str(exc)[:500]

@@ -39,7 +39,10 @@ def test_notification_logs_event():
 def test_notification_records_failure(mocker):
     """Недоступность SMTP не должна терять заявку — она уже в базе."""
     lead = LeadFactory()
-    mocker.patch("apps.leads.tasks.send_mail", side_effect=OSError("SMTP недоступен"))
+    mocker.patch(
+        "apps.leads.tasks.EmailMultiAlternatives.send",
+        side_effect=OSError("SMTP недоступен"),
+    )
 
     with pytest.raises(Exception):  # noqa: B017  # Celery оборачивает ошибку в Retry
         send_lead_notification(lead.pk, ["sales@modernmachinery.ru"])

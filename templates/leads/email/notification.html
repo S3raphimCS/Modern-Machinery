@@ -1,0 +1,199 @@
+{% comment %}
+  Письмо о новой заявке.
+
+  Вёрстка писем живёт по своим правилам, отличным от сайта:
+    * раскладка таблицами — Outlook рисует письма движком Word и не понимает
+      ни сеток, ни флексбоксов;
+    * стили только инлайн — часть клиентов вырезает блок <style> целиком;
+    * шрифты только системные — @font-face игнорируют и Outlook, и Gmail,
+      поэтому вместо Montserrat берём Arial с разрядкой: набор остаётся
+      узнаваемым, а подстановки шрифта не происходит;
+    * ни одной картинки — Outlook и Gmail по умолчанию их не показывают, и
+      шапка на изображении выглядела бы сломанной у большинства получателей;
+    * ширина 600 пикселей — исторический предел области просмотра в клиентах.
+{% endcomment %}<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>{{ subject }}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f5;">
+
+{# Строка, которую почтовый клиент показывает в списке писем рядом с темой. #}
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">
+  {{ lead.subject_title }}{% if lead.department %} · {{ lead.department.name }}{% endif %}
+  &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="background-color:#f4f4f5;">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;background-color:#ffffff;">
+
+        <tr><td style="height:4px;background-color:#DD1C2B;font-size:0;line-height:0;">&nbsp;</td></tr>
+
+        <tr>
+          <td style="background-color:#16181C;padding:22px 28px;">
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:17px;font-weight:bold;
+                        letter-spacing:2px;text-transform:uppercase;color:#ffffff;">
+              Модерн Машинери
+            </div>
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;
+                        letter-spacing:1px;text-transform:uppercase;color:#9ea2a8;padding-top:6px;">
+              Филиал в Хабаровске
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:28px 28px 8px;">
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;
+                        letter-spacing:1.4px;text-transform:uppercase;color:#DD1C2B;">
+              Новая заявка · №{{ lead.pk }}
+            </div>
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:bold;
+                        color:#16181C;padding-top:8px;line-height:1.25;">
+              {{ lead.get_type_display }}
+            </div>
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#63666b;
+                        padding-top:6px;">
+              {{ lead.subject_title }}{% if lead.department %} · {{ lead.department.name }}{% endif %}
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:18px 28px 0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="border-top:2px solid #16181C;">
+              <tr>
+                <td colspan="2" style="font-family:Arial,Helvetica,sans-serif;font-size:11px;
+                           font-weight:bold;letter-spacing:1.2px;text-transform:uppercase;
+                           color:#63666b;padding:14px 0 4px;">
+                  Контакт
+                </td>
+              </tr>
+
+              <tr>
+                <td width="140" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;
+                           color:#63666b;padding:9px 0;border-bottom:1px solid #e6e6e6;">Имя</td>
+                <td style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#16181C;
+                           padding:9px 0;border-bottom:1px solid #e6e6e6;">{{ lead.name }}</td>
+              </tr>
+
+              {% if lead.company %}
+              <tr>
+                <td style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#63666b;
+                           padding:9px 0;border-bottom:1px solid #e6e6e6;">Компания</td>
+                <td style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#16181C;
+                           padding:9px 0;border-bottom:1px solid #e6e6e6;">{{ lead.company }}</td>
+              </tr>
+              {% endif %}
+
+              {% if lead.inn %}
+              <tr>
+                <td style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#63666b;
+                           padding:9px 0;border-bottom:1px solid #e6e6e6;">ИНН</td>
+                <td style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#16181C;
+                           padding:9px 0;border-bottom:1px solid #e6e6e6;">{{ lead.inn }}</td>
+              </tr>
+              {% endif %}
+
+              {% if lead.phone %}
+              <tr>
+                <td style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#63666b;
+                           padding:9px 0;border-bottom:1px solid #e6e6e6;">Телефон</td>
+                <td style="font-family:Arial,Helvetica,sans-serif;font-size:15px;
+                           padding:9px 0;border-bottom:1px solid #e6e6e6;">
+                  {# Ссылка, а не текст: с телефона менеджер звонит в одно касание. #}
+                  <a href="tel:{{ lead.phone|cut:' '|cut:'('|cut:')'|cut:'-' }}"
+                     style="color:#DD1C2B;text-decoration:none;font-weight:bold;">{{ lead.phone }}</a>
+                </td>
+              </tr>
+              {% endif %}
+
+              {% if lead.email %}
+              <tr>
+                <td style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#63666b;
+                           padding:9px 0;border-bottom:1px solid #e6e6e6;">E-mail</td>
+                <td style="font-family:Arial,Helvetica,sans-serif;font-size:15px;
+                           padding:9px 0;border-bottom:1px solid #e6e6e6;">
+                  <a href="mailto:{{ lead.email }}"
+                     style="color:#DD1C2B;text-decoration:none;">{{ lead.email }}</a>
+                </td>
+              </tr>
+              {% endif %}
+            </table>
+          </td>
+        </tr>
+
+        {% if lead.message %}
+        <tr>
+          <td style="padding:22px 28px 0;">
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;
+                        letter-spacing:1.2px;text-transform:uppercase;color:#63666b;
+                        padding-bottom:10px;">Сообщение</div>
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;
+                        color:#16181C;background-color:#f7f7f7;padding:14px 16px;
+                        border-left:3px solid #DD1C2B;">{{ lead.message|linebreaksbr }}</div>
+          </td>
+        </tr>
+        {% endif %}
+
+        <tr>
+          <td style="padding:26px 28px 6px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                {# Кнопка собрана таблицей: у Outlook нет padding на ссылках. #}
+                <td align="center" bgcolor="#DD1C2B" style="background-color:#DD1C2B;">
+                  <a href="{{ admin_url }}"
+                     style="display:inline-block;padding:14px 30px;
+                            font-family:Arial,Helvetica,sans-serif;font-size:13px;
+                            font-weight:bold;letter-spacing:1.2px;text-transform:uppercase;
+                            color:#ffffff;text-decoration:none;">Открыть заявку</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:20px 28px 26px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="border-top:1px solid #e6e6e6;">
+              <tr>
+                <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#8b8f95;
+                           line-height:1.7;padding-top:14px;">
+                  Получена: {{ lead.created_at|date:"d.m.Y в H:i" }}<br>
+                  {% if lead.source_url %}Страница: {{ lead.source_url }}<br>{% endif %}
+                  {% if lead.utm %}Метки: {{ lead.utm }}<br>{% endif %}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="background-color:#16181C;padding:18px 28px;">
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#8b8f95;
+                        line-height:1.6;">
+              Письмо отправлено автоматически сайтом филиала в Хабаровске.<br>
+              Отвечать на него не нужно — свяжитесь с клиентом напрямую.
+            </div>
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
