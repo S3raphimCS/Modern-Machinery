@@ -24,6 +24,23 @@
     {% endif %}
   </div>
 
+  {% comment %}
+    Наличие вынесено наверх и не сворачивается: снабженцу это первое, что нужно
+    отсечь, и прятать самый частый фильтр за раскрывающимся заголовком значило
+    бы добавить клик там, где его быть не должно. Заголовок при этом есть — без
+    него строка выглядела выпавшей из панели.
+  {% endcomment %}
+  <div class="mm-filters__pinned">
+    <div class="mm-filters__pinned-title">Наличие</div>
+    <label class="mm-filters__row">
+      <span>
+        <input type="checkbox" name="in_stock" value="1"
+               {% if filters.in_stock_only %}checked{% endif %}>
+        Только в наличии
+      </span>
+    </label>
+  </div>
+
   <details class="mm-filters__section" {% if facets.brands_selected %}open{% endif %}>
     <summary class="mm-filters__summary">
       <span class="mm-filters__summary-label">Бренд</span>
@@ -116,40 +133,40 @@
     </details>
   {% endfor %}
 
-  {% comment %}
-    Одиночные переключатели и сортировка не сворачиваются: прятать за
-    заголовком единственную строку — лишний клик без выигрыша в месте.
-  {% endcomment %}
-  <div class="mm-filters__flat">
-    {% for spec in facets.booleans %}
-      <label class="mm-filters__row">
-        <span>
-          <input type="checkbox" name="spec_{{ spec.code }}" value="1"
-                 {% if spec.checked %}checked{% endif %}>
-          {{ spec.name }}
-        </span>
-        <span class="mm-filters__count">{{ spec.count }}</span>
-      </label>
-    {% endfor %}
+  {% for group in facets.boolean_groups %}
+    <details class="mm-filters__section" {% if group.selected_count %}open{% endif %}>
+      <summary class="mm-filters__summary">
+        <span class="mm-filters__summary-label">{{ group.name }}</span>
+        {% if group.selected_count %}
+          <span class="mm-filters__badge mm-filters__badge--small">{{ group.selected_count }}</span>
+        {% endif %}
+        <span class="mm-filters__chevron" aria-hidden="true"></span>
+      </summary>
+      <div class="mm-filters__body">
+        {% for spec in group.items %}
+          <label class="mm-filters__row">
+            <span>
+              <input type="checkbox" name="spec_{{ spec.code }}" value="1"
+                     {% if spec.checked %}checked{% endif %}>
+              {{ spec.name }}
+            </span>
+            <span class="mm-filters__count">{{ spec.count }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </details>
+  {% endfor %}
 
-    <label class="mm-filters__row">
-      <span>
-        <input type="checkbox" name="in_stock" value="1"
-               {% if filters.in_stock_only %}checked{% endif %}>
-        Только в наличии
-      </span>
-    </label>
-
-    <div class="mm-filters__sort">
-      <label class="mm-filters__label" for="mm-sort">Сортировка</label>
-      <select class="mm-input" name="sort" id="mm-sort">
-        <option value="default">По умолчанию</option>
-        <option value="name" {% if filters.sort == 'name' %}selected{% endif %}>По названию</option>
-        <option value="price" {% if filters.sort == 'price' %}selected{% endif %}>Сначала дешевле</option>
-        <option value="-price" {% if filters.sort == '-price' %}selected{% endif %}>Сначала дороже</option>
-        <option value="new" {% if filters.sort == 'new' %}selected{% endif %}>Сначала новые</option>
-      </select>
-    </div>
+  {% comment %}Сортировка — не фильтр, поэтому стоит отдельно и не сворачивается.{% endcomment %}
+  <div class="mm-filters__sort">
+    <label class="mm-filters__label" for="mm-sort">Сортировка</label>
+    <select class="mm-input" name="sort" id="mm-sort">
+      <option value="default">По умолчанию</option>
+      <option value="name" {% if filters.sort == 'name' %}selected{% endif %}>По названию</option>
+      <option value="price" {% if filters.sort == 'price' %}selected{% endif %}>Сначала дешевле</option>
+      <option value="-price" {% if filters.sort == '-price' %}selected{% endif %}>Сначала дороже</option>
+      <option value="new" {% if filters.sort == 'new' %}selected{% endif %}>Сначала новые</option>
+    </select>
   </div>
 
   <noscript>

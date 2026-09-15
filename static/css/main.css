@@ -262,8 +262,16 @@ img { max-width: 100%; }
 }
 .mm-filters__row:hover .mm-filters__count { color: var(--mm-red-dark); }
 
-.mm-filters__flat { padding-top: 6px; }
-.mm-filters__sort { margin-top: 14px; }
+/* Наличие: всегда на виду, но с заголовком — строка без подписи выглядела
+   выпавшей из панели. */
+.mm-filters__pinned { border-bottom: 1px solid var(--mm-border); padding-bottom: 6px; }
+.mm-filters__pinned-title {
+  font-family: var(--mm-font-display); font-weight: 600; font-size: 13px;
+  letter-spacing: .8px; text-transform: uppercase; color: var(--mm-ink);
+  padding: 13px 4px 4px;
+}
+
+.mm-filters__sort { margin-top: 18px; }
 .mm-filters__reset { margin-top: 16px; }
 
 .mm-filters__range { display: flex; gap: 8px; align-items: center; }

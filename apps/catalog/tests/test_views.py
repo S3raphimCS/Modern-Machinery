@@ -173,3 +173,54 @@ def test_card_name_remains_a_link(client, machine_factory_set):
     content = client.get(reverse("catalog:machine-list")).content.decode()
 
     assert f'<a class="mm-card__name" href="{machine.get_absolute_url()}"' in content
+
+
+def test_availability_filter_has_a_heading(client, machine_factory_set):
+    """Наличие на виду, но с подписью: строка без заголовка выглядела выпавшей."""
+    content = client.get(reverse("catalog:machine-list")).content.decode()
+
+    assert 'mm-filters__pinned-title">Наличие<' in content
+    assert 'name="in_stock"' in content
+
+
+def test_boolean_filters_live_in_a_named_section(client, machine_factory_set, spec_group):
+    """Булев параметр попадает в раздел своей группы, а не висит отдельно."""
+    from apps.specs.factories import SpecKeyFactory
+    from apps.specs.models import MachineSpec, SpecKey
+
+    key = SpecKeyFactory(
+        code="cabin_ac",
+        name="Кондиционер в кабине",
+        group=spec_group,
+        unit="",
+        value_type=SpecKey.ValueType.BOOL,
+        is_filterable=True,
+    )
+    MachineSpec.objects.create(machine=machine_factory_set[0], spec_key=key, value_bool=True)
+
+    content = client.get(reverse("catalog:machine-list")).content.decode()
+
+    # Заголовок раздела — название группы из справочника.
+    assert f'mm-filters__summary-label">{spec_group.name}<' in content
+    assert "Кондиционер в кабине" in content
+    # И он свёрнут, как все остальные разделы.
+    assert "mm-filters__flat" not in content
+
+
+def test_boolean_section_opens_when_chosen(client, machine_factory_set, spec_group):
+    from apps.specs.factories import SpecKeyFactory
+    from apps.specs.models import MachineSpec, SpecKey
+
+    key = SpecKeyFactory(
+        code="cabin_ac",
+        group=spec_group,
+        unit="",
+        value_type=SpecKey.ValueType.BOOL,
+        is_filterable=True,
+    )
+    MachineSpec.objects.create(machine=machine_factory_set[0], spec_key=key, value_bool=True)
+
+    content = client.get(reverse("catalog:machine-list"), {"spec_cabin_ac": "1"}).content.decode()
+
+    assert content.count('<details class="mm-filters__section" open>') == 1
+    assert 'mm-filters__badge mm-filters__badge--small">1<' in content

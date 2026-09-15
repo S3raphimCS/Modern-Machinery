@@ -214,7 +214,36 @@ def test_annotate_selection_marks_booleans(brand, machine_type, spec_group):
     MachineSpec.objects.create(machine=item, spec_key=key, value_bool=True)
 
     filters = parse_filters(QueryDict("spec_cabin_ac=1"), [key])
-    assert annotate_selection(build_facets(), filters)["booleans"][0]["checked"] is True
+    groups = annotate_selection(build_facets(), filters)["boolean_groups"]
+
+    assert groups[0]["items"][0]["checked"] is True
+    assert groups[0]["selected_count"] == 1
+
+
+def test_boolean_filters_carry_their_group(brand, machine_type, spec_group):
+    """У булевых параметров группа в справочнике есть, и панель её показывает.
+
+    Без неё они выпадали из панели строками без заголовка, хотя каждый
+    числовой и списочный параметр получал раздел со своим названием.
+    """
+    key = SpecKeyFactory(
+        code="cabin_ac",
+        name="Кондиционер в кабине",
+        group=spec_group,
+        unit="",
+        value_type=SpecKey.ValueType.BOOL,
+        is_filterable=True,
+    )
+    item = MachineFactory(slug="ac", brand=brand, machine_type=machine_type)
+    MachineSpec.objects.create(machine=item, spec_key=key, value_bool=True)
+
+    groups = annotate_selection(build_facets(), parse_filters(QueryDict(""), [key]))[
+        "boolean_groups"
+    ]
+
+    assert groups[0]["name"] == spec_group.name
+    assert [item["name"] for item in groups[0]["items"]] == ["Кондиционер в кабине"]
+    assert groups[0]["selected_count"] == 0
 
 
 def test_annotate_selection_counts_selected_brands(machine_factory_set, brand, power_key):

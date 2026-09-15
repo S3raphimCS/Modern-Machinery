@@ -251,7 +251,7 @@ def annotate_selection(facets: dict, filters) -> dict:
         "machine_types_selected": sum(1 for item in machine_types if item["checked"]),
         "numeric": [],
         "options": [],
-        "booleans": [],
+        "boolean_groups": [],
     }
 
     for item in facets["numeric"]:
@@ -276,7 +276,23 @@ def annotate_selection(facets: dict, filters) -> dict:
             }
         )
 
+    # Булевы параметры собираются по своей группе из справочника: у каждого
+    # она есть, и без неё они выпадали из панели строками без заголовка.
+    # Группа, а не отдельный раздел на параметр: держать раскрывающийся
+    # заголовок ради одной галочки — лишний клик, а вот общий заголовок
+    # «Оснащение» осмыслен и растёт вместе с числом таких параметров.
+    grouped: dict[str, list] = {}
     for item in facets["booleans"]:
-        result["booleans"].append({**item, "checked": bool(filters.booleans.get(item["code"]))})
+        entry = {**item, "checked": bool(filters.booleans.get(item["code"]))}
+        grouped.setdefault(item["group"], []).append(entry)
+
+    result["boolean_groups"] = [
+        {
+            "name": name,
+            "items": items,
+            "selected_count": sum(1 for item in items if item["checked"]),
+        }
+        for name, items in grouped.items()
+    ]
 
     return result
