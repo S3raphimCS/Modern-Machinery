@@ -722,16 +722,24 @@ class Command(BaseCommand):
         ]
         for name, lead_type, type_slug, dept_code, priority in rules:
             department = Department.objects.get(code=dept_code)
+            shape = {
+                "lead_type": lead_type,
+                "machine_type": MachineType.objects.filter(slug=type_slug).first()
+                if type_slug
+                else None,
+                "department": department,
+                "priority": priority,
+                "is_active": True,
+            }
+            # Список адресов заполняется только при создании правила. Менеджер
+            # правит его в админке под реальные ящики филиала, и повторный
+            # запуск наполнения не должен затирать эту настройку —
+            # демонстрационные адреса вернулись бы поверх рабочих.
             LeadRoutingRule.objects.update_or_create(
                 name=name,
-                defaults={
-                    "lead_type": lead_type,
-                    "machine_type": MachineType.objects.filter(slug=type_slug).first()
-                    if type_slug
-                    else None,
-                    "department": department,
+                defaults=shape,
+                create_defaults={
+                    **shape,
                     "emails": [emails.get(dept_code, "office@modernmachinery.ru")],
-                    "priority": priority,
-                    "is_active": True,
                 },
             )
