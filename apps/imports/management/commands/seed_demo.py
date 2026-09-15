@@ -129,7 +129,7 @@ class Command(BaseCommand):
         )
         for kind, value, ext in [
             ("phone", "+7 (4212) 45-67-00", ""),
-            ("email", "khv@modernmachinery.ru", ""),
+            ("email", "khv@modernmachinery.example", ""),
             ("whatsapp", "+7 (914) 771-05-42", ""),
             ("telegram", "@modernmachinery_khv", ""),
         ]:
@@ -541,7 +541,7 @@ class Command(BaseCommand):
     def _create_content(self, branch) -> int:
         settings_obj = SiteSettings.load()
         settings_obj.main_phone = "+7 (4212) 45-67-00"
-        settings_obj.main_email = "khv@modernmachinery.ru"
+        settings_obj.main_email = "khv@modernmachinery.example"
         settings_obj.address = "Хабаровск, ул. Промышленная, 20"
         settings_obj.work_hours = "Пн–Сб 9:00–18:00"
         settings_obj.metrika_id = "29739990"
@@ -740,6 +740,6 @@ class Command(BaseCommand):
                 defaults=shape,
                 create_defaults={
                     **shape,
-                    "emails": [emails.get(dept_code, "office@modernmachinery.ru")],
+                    "emails": [emails.get(dept_code, "office@modernmachinery.example")],
                 },
             )

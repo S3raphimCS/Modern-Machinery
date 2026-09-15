@@ -1,6 +1,6 @@
 """Удаление адреса из правил маршрутизации заявок."""
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from apps.leads.models import LeadRoutingRule
 
@@ -15,8 +15,16 @@ class Command(BaseCommand):
     def add_arguments(self, parser) -> None:
         parser.add_argument(
             "addresses",
-            nargs="+",
+            nargs="*",
             help="Адреса, которые нужно убрать. Сравнение точное, без учёта регистра.",
+        )
+        parser.add_argument(
+            "--domain",
+            action="append",
+            default=[],
+            dest="domains",
+            help="Убрать все адреса на этом домене, включая поддомены. "
+            "Можно указать несколько раз.",
         )
         parser.add_argument(
             "--dry-run",
@@ -26,15 +34,29 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options) -> None:
         targets = {address.strip().casefold() for address in options["addresses"]}
+        domains = {domain.strip().casefold().lstrip("@") for domain in options["domains"]}
         dry_run = options["dry_run"]
+
+        if not targets and not domains:
+            raise CommandError("Укажите адрес или --domain")
+
+        def matches(address: str) -> bool:
+            value = address.casefold()
+            if value in targets:
+                return True
+            if "@" not in value:
+                return False
+            domain = value.rsplit("@", 1)[1]
+            return any(domain == item or domain.endswith(f".{item}") for item in domains)
+
         changed = 0
 
         for rule in LeadRoutingRule.objects.order_by("priority", "name"):
-            kept = [address for address in rule.emails if address.casefold() not in targets]
+            kept = [address for address in rule.emails if not matches(address)]
             if len(kept) == len(rule.emails):
                 continue
 
-            removed = [a for a in rule.emails if a.casefold() in targets]
+            removed = [a for a in rule.emails if matches(a)]
             self.stdout.write(f"{rule.name}")
             self.stdout.write(self.style.WARNING(f"  убрано:  {', '.join(removed)}"))
             self.stdout.write(f"  осталось: {', '.join(kept) or '— (только подписчики)'}")

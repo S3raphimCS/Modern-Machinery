@@ -46,7 +46,7 @@ def test_seed_creates_routing_rules(seeded):
         machine_type__slug="vilochnyy-pogruzchik"
     ).first()
     assert forklift_rule is not None
-    assert forklift_rule.emails == ["forklift@modernmachinery.ru"]
+    assert forklift_rule.emails == ["forklift@modernmachinery.example"]
 
 
 def test_every_machine_has_specs(seeded):

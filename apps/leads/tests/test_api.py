@@ -96,14 +96,14 @@ def test_notification_email_sent(client, consent, department, django_capture_on_
     from apps.leads.factories import LeadRoutingRuleFactory
 
     LeadRoutingRuleFactory(
-        lead_type=Lead.Type.PRICE, department=department, emails=["sales@modernmachinery.ru"]
+        lead_type=Lead.Type.PRICE, department=department, emails=["sales@modernmachinery.example"]
     )
 
     with django_capture_on_commit_callbacks(execute=True):
         post(client, payload())
 
     assert len(mail.outbox) == 1
-    assert mail.outbox[0].to == ["sales@modernmachinery.ru"]
+    assert mail.outbox[0].to == ["sales@modernmachinery.example"]
 
 
 def test_leads_cannot_be_listed(client, consent):

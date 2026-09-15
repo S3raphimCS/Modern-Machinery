@@ -50,7 +50,7 @@ def user(db):
 
 @pytest.fixture
 def staff_user(db):
-    return StaffUserFactory(username="admin", email="admin@modernmachinery.ru")
+    return StaffUserFactory(username="admin", email="admin@modernmachinery.example")
 
 
 @pytest.fixture

@@ -27,12 +27,12 @@ def test_accepts_custom_credentials():
         "create_dev_superuser",
         username="manager",
         password="s3cret",
-        email="manager@modernmachinery.ru",
+        email="manager@modernmachinery.example",
         verbosity=0,
     )
 
     user = User.objects.get(username="manager")
-    assert user.email == "manager@modernmachinery.ru"
+    assert user.email == "manager@modernmachinery.example"
     assert user.check_password("s3cret")
 
 

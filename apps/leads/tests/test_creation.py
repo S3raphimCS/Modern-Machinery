@@ -131,7 +131,7 @@ def test_department_assigned_from_routing_rule(consent, department, machine):
     from apps.leads.factories import LeadRoutingRuleFactory
 
     LeadRoutingRuleFactory(
-        lead_type=Lead.Type.PRICE, department=department, emails=["sales@modernmachinery.ru"]
+        lead_type=Lead.Type.PRICE, department=department, emails=["sales@modernmachinery.example"]
     )
     lead, _ = create_lead(data=base_data(machine=machine))
     assert lead.department == department

@@ -16,23 +16,23 @@ pytestmark = pytest.mark.django_db
 
 def test_notification_sent_to_recipients(machine):
     lead = LeadFactory(machine=machine)
-    result = send_lead_notification(lead.pk, ["parts@modernmachinery.ru"])
+    result = send_lead_notification(lead.pk, ["parts@modernmachinery.example"])
 
     assert result == "sent"
     assert len(mail.outbox) == 1
-    assert mail.outbox[0].to == ["parts@modernmachinery.ru"]
+    assert mail.outbox[0].to == ["parts@modernmachinery.example"]
     assert lead.name in mail.outbox[0].body
 
 
 def test_notification_subject_contains_subject_title(machine):
     lead = LeadFactory(machine=machine)
-    send_lead_notification(lead.pk, ["sales@modernmachinery.ru"])
+    send_lead_notification(lead.pk, ["sales@modernmachinery.example"])
     assert str(machine) in mail.outbox[0].subject
 
 
 def test_notification_logs_event():
     lead = LeadFactory()
-    send_lead_notification(lead.pk, ["sales@modernmachinery.ru"])
+    send_lead_notification(lead.pk, ["sales@modernmachinery.example"])
     assert lead.events.filter(kind=LeadEvent.Kind.EMAIL_SENT).exists()
 
 
@@ -45,7 +45,7 @@ def test_notification_records_failure(mocker):
     )
 
     with pytest.raises(Exception):  # noqa: B017  # Celery оборачивает ошибку в Retry
-        send_lead_notification(lead.pk, ["sales@modernmachinery.ru"])
+        send_lead_notification(lead.pk, ["sales@modernmachinery.example"])
 
     assert lead.events.filter(kind=LeadEvent.Kind.EMAIL_FAILED).exists()
     assert Lead.objects.filter(pk=lead.pk).exists()
@@ -106,6 +106,6 @@ def test_purge_is_idempotent():
     assert purge_expired_leads() == 0
 
 
-@override_settings(LEADS_FALLBACK_EMAIL="office@modernmachinery.ru")
+@override_settings(LEADS_FALLBACK_EMAIL="office@modernmachinery.example")
 def test_notification_for_missing_lead_is_safe():
-    assert send_lead_notification(999999, ["office@modernmachinery.ru"]) == "missing"
+    assert send_lead_notification(999999, ["office@modernmachinery.example"]) == "missing"

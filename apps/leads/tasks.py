@@ -32,8 +32,17 @@ def send_lead_notification(self, lead_id: int, recipients: list[str]) -> str:
     if lead is None:  # pragma: no cover
         logger.warning("Заявка %s не найдена, письмо не отправлено", lead_id)
         return "missing"
-    if not recipients:  # pragma: no cover
-        recipients = [settings.LEADS_FALLBACK_EMAIL]
+    if not recipients:
+        # Получателей не осталось: их либо не настроили, либо все адреса
+        # оказались на запрещённом домене. Подставлять резервный нельзя — он
+        # уже проверен при подборе. Заявка в базе, в админке видна, письма нет.
+        LeadEvent.objects.create(
+            lead=lead,
+            kind=LeadEvent.Kind.EMAIL_FAILED,
+            comment="Некому отправить: получатели не настроены или запрещены",
+        )
+        logger.warning("Заявка %s: нет разрешённых получателей", lead_id)
+        return "no-recipients"
 
     subject = f"Заявка с сайта: {lead.get_type_display()} — {lead.subject_title}"
     context = {

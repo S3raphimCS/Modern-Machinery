@@ -85,25 +85,25 @@ def test_recipients_taken_from_rule(department):
     LeadRoutingRuleFactory(
         lead_type=Lead.Type.PRICE,
         department=department,
-        emails=["sales@modernmachinery.ru", "head@modernmachinery.ru"],
+        emails=["sales@modernmachinery.example", "head@modernmachinery.example"],
     )
     rule, recipients = resolve_recipients(LeadFactory(type=Lead.Type.PRICE))
 
     assert rule is not None
-    assert recipients == ["sales@modernmachinery.ru", "head@modernmachinery.ru"]
+    assert recipients == ["sales@modernmachinery.example", "head@modernmachinery.example"]
 
 
-@override_settings(LEADS_FALLBACK_EMAIL="office@modernmachinery.ru")
+@override_settings(LEADS_FALLBACK_EMAIL="office@modernmachinery.example")
 def test_fallback_used_when_no_rule_matches():
     """Заявка, которая никуда не ушла, — худший из возможных исходов."""
     rule, recipients = resolve_recipients(LeadFactory(type=Lead.Type.PRICE))
 
     assert rule is None
-    assert recipients == ["office@modernmachinery.ru"]
+    assert recipients == ["office@modernmachinery.example"]
 
 
-@override_settings(LEADS_FALLBACK_EMAIL="office@modernmachinery.ru")
+@override_settings(LEADS_FALLBACK_EMAIL="office@modernmachinery.example")
 def test_fallback_used_when_rule_has_no_emails(department):
     LeadRoutingRuleFactory(lead_type=Lead.Type.PRICE, department=department, emails=[])
     _, recipients = resolve_recipients(LeadFactory(type=Lead.Type.PRICE))
-    assert recipients == ["office@modernmachinery.ru"]
+    assert recipients == ["office@modernmachinery.example"]

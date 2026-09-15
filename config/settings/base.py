@@ -212,9 +212,23 @@ else:
 # --- Почта ----------------------------------------------------------------
 
 vars().update(env.email_url("EMAIL_URL", default="consolemail://"))
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="site@modernmachinery.ru")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="site@modernmachinery.example")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 LEADS_FALLBACK_EMAIL = env("LEADS_FALLBACK_EMAIL", default=DEFAULT_FROM_EMAIL)
+
+# Домены, на которые сайт отказывается отправлять письма о заявках.
+#
+# Предохранитель для демонстрационных площадок: не даёт заявке уйти на почту
+# настоящей компании, если её адрес остался в правилах маршрутизации или его
+# вписали в админке по невнимательности.
+#
+# На рабочем сайте компании список обязан быть пустым — иначе он заблокирует
+# её собственную почту.
+LEADS_BLOCKED_EMAIL_DOMAINS = [
+    domain.strip().lower().lstrip("@")
+    for domain in env.list("LEADS_BLOCKED_EMAIL_DOMAINS", default=[])
+    if domain.strip()
+]
 
 # --- Защита форм заявок ---------------------------------------------------
 

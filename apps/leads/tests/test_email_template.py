@@ -27,7 +27,7 @@ def sent(machine, department):
         machine=machine,
         department=department,
     )
-    send_lead_notification(lead.pk, ["sales@modernmachinery.ru"])
+    send_lead_notification(lead.pk, ["sales@modernmachinery.example"])
     return mail.outbox[0], lead
 
 
@@ -125,7 +125,7 @@ def test_brand_colours_present(sent):
 def test_optional_blocks_are_skipped(machine):
     """Пустые поля не оставляют в письме осиротевших подписей."""
     lead = LeadFactory(name="Без компании", company="", inn="", email="", message="")
-    send_lead_notification(lead.pk, ["sales@modernmachinery.ru"])
+    send_lead_notification(lead.pk, ["sales@modernmachinery.example"])
     html = html_part(mail.outbox[0])
 
     assert "Компания" not in html
@@ -135,6 +135,6 @@ def test_optional_blocks_are_skipped(machine):
 
 def test_message_keeps_line_breaks(machine):
     lead = LeadFactory(message="Первая строка\nВторая строка")
-    send_lead_notification(lead.pk, ["sales@modernmachinery.ru"])
+    send_lead_notification(lead.pk, ["sales@modernmachinery.example"])
 
     assert "<br>" in html_part(mail.outbox[0])

@@ -8,7 +8,7 @@ DEFAULT_USERNAME = "admin"
 # nosec B105 — это не секрет в коде, а значение по умолчанию для команды,
 # которая при DEBUG=False отказывается работать.
 DEFAULT_PASSWORD = "admin"  # noqa: S105  # nosec B105
-DEFAULT_EMAIL = "admin@modernmachinery.ru"
+DEFAULT_EMAIL = "admin@modernmachinery.example"
 
 
 class Command(BaseCommand):

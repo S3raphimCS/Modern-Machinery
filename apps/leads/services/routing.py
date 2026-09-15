@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import logging
+
 from django.conf import settings
 
 from apps.leads.models import Lead, LeadRoutingRule
+
+logger = logging.getLogger(__name__)
 
 
 def match_rule(lead: Lead) -> LeadRoutingRule | None:
@@ -40,6 +44,31 @@ def match_rule(lead: Lead) -> LeadRoutingRule | None:
     return candidates[0][3]
 
 
+def is_blocked(address: str) -> bool:
+    """Запрещена ли отправка на этот адрес.
+
+    Сравнивается домен целиком и его поддомены: `modernmachinery.ru` в списке
+    закрывает и `khv.modernmachinery.ru`.
+    """
+    blocked = getattr(settings, "LEADS_BLOCKED_EMAIL_DOMAINS", [])
+    if not blocked or "@" not in address:
+        return False
+
+    domain = address.rsplit("@", 1)[1].strip().lower()
+    return any(domain == item or domain.endswith(f".{item}") for item in blocked)
+
+
+def filter_blocked(addresses: list[str]) -> list[str]:
+    """Убирает из списка адреса на запрещённых доменах."""
+    allowed = []
+    for address in addresses:
+        if is_blocked(address):
+            logger.warning("Отправка на %s запрещена настройкой домена", address)
+            continue
+        allowed.append(address)
+    return allowed
+
+
 def resolve_recipients(lead: Lead) -> tuple[LeadRoutingRule | None, list[str]]:
     """Определяет правило и список адресов получателей.
 
@@ -67,4 +96,11 @@ def resolve_recipients(lead: Lead) -> tuple[LeadRoutingRule | None, list[str]]:
     # должно прийти один раз. Порядок сохраняем — первым идёт ящик отдела.
     unique = list(dict.fromkeys(address for address in recipients if address))
 
-    return rule, unique or [settings.LEADS_FALLBACK_EMAIL]
+    allowed = filter_blocked(unique)
+    if allowed:
+        return rule, allowed
+
+    # Сюда попадаем, если получателей не нашлось вовсе либо все они оказались
+    # на запрещённом домене. Резервный адрес проверяется так же: он тоже может
+    # указывать на чужую почту.
+    return rule, filter_blocked([settings.LEADS_FALLBACK_EMAIL])

@@ -35,6 +35,6 @@ class LeadRoutingRuleFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: f"Правило {n}")
     department = factory.SubFactory(DepartmentFactory)
-    emails = ["sales@modernmachinery.ru"]
+    emails = ["sales@modernmachinery.example"]
     priority = 100
     is_active = True

@@ -795,15 +795,15 @@ SERVICES = [
 ]
 
 DEPARTMENTS = [
-    ("prodazhi-tehniki", "Отдел продаж техники", "sales@modernmachinery.ru"),
-    ("zapchasti", "Отдел запасных частей", "parts@modernmachinery.ru"),
-    ("servis", "Сервисная служба", "service@modernmachinery.ru"),
+    ("prodazhi-tehniki", "Отдел продаж техники", "sales@modernmachinery.example"),
+    ("zapchasti", "Отдел запасных частей", "parts@modernmachinery.example"),
+    ("servis", "Сервисная служба", "service@modernmachinery.example"),
     (
         "skladskoe-oborudovanie",
         "Складское и погрузочное оборудование",
-        "forklift@modernmachinery.ru",
+        "forklift@modernmachinery.example",
     ),
-    ("uchebnyy-centr", "Учебный центр", "training@modernmachinery.ru"),
+    ("uchebnyy-centr", "Учебный центр", "training@modernmachinery.example"),
 ]
 
 EMPLOYEES = [
@@ -823,7 +823,7 @@ EMPLOYEES = [
         "Соколова Мария Викторовна",
         "Менеджер по запасным частям",
         "zapchasti",
-        [("phone", "+7 (4212) 45-67-24", "1954"), ("email", "parts@modernmachinery.ru", "")],
+        [("phone", "+7 (4212) 45-67-24", "1954"), ("email", "parts@modernmachinery.example", "")],
     ),
     (
         "Гордеев Илья Романович",
@@ -835,7 +835,7 @@ EMPLOYEES = [
         "Ерёмин Виктор Петрович",
         "Менеджер по складскому оборудованию",
         "skladskoe-oborudovanie",
-        [("phone", "+7 (4212) 45-67-38", ""), ("email", "forklift@modernmachinery.ru", "")],
+        [("phone", "+7 (4212) 45-67-38", ""), ("email", "forklift@modernmachinery.example", "")],
     ),
     (
         "Чернова Ольга Дмитриевна",
