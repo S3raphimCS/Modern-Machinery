@@ -22,18 +22,18 @@ class LeasingCalculatorForm(forms.Form):
             attrs={
                 "class": "mm-input",
                 "placeholder": "18 000 000",
-                "step": "100000",
+                "step": "any",
                 "inputmode": "numeric",
             }
         ),
     )
     advance_percent = forms.IntegerField(
         label="Аванс",
-        widget=forms.NumberInput(attrs={"class": "mm-input", "step": "5", "inputmode": "numeric"}),
+        widget=forms.NumberInput(attrs={"class": "mm-input", "step": "1", "inputmode": "numeric"}),
     )
     months = forms.IntegerField(
         label="Срок",
-        widget=forms.NumberInput(attrs={"class": "mm-input", "step": "12", "inputmode": "numeric"}),
+        widget=forms.NumberInput(attrs={"class": "mm-input", "step": "1", "inputmode": "numeric"}),
     )
     markup_percent = forms.DecimalField(
         label="Удорожание в год",
@@ -42,7 +42,7 @@ class LeasingCalculatorForm(forms.Form):
         max_digits=5,
         decimal_places=2,
         widget=forms.NumberInput(
-            attrs={"class": "mm-input", "step": "0.5", "inputmode": "decimal"}
+            attrs={"class": "mm-input", "step": "any", "inputmode": "decimal"}
         ),
     )
 

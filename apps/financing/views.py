@@ -16,6 +16,10 @@ def leasing(request):
     GET отдаёт страницу с условиями и партнёрами, POST считает платёж.
     Расчёт показывается всем; заявка создаётся, только если посетитель сам
     оставил контакты — как и в калькуляторе стоимости владения.
+
+    Пересчёт по ходу ввода помечен `action=calc`: он приходит на каждое
+    изменение поля, и заявку по нему создавать нельзя — человек ещё набирает
+    телефон, а не отправляет его.
     """
     terms = LeasingTerms.load()
     partners = LeasingPartner.objects.filter(is_active=True)
@@ -24,17 +28,21 @@ def leasing(request):
         context = {"form": LeasingCalculatorForm(), "terms": terms, "partners": partners}
         return render(request, "financing/leasing.html", context)
 
+    live_recalculation = request.POST.get("action") == "calc"
+
     form = LeasingCalculatorForm(request.POST)
     if not form.is_valid():
         context = {"form": form, "terms": terms, "partners": partners}
-        return render(request, "financing/partials/result.html", context, status=400)
+        # Код 200, а не 400: htmx по умолчанию не подставляет ответы с ошибкой,
+        # и сообщение о неверном значении просто не дошло бы до страницы.
+        return render(request, "financing/partials/result.html", context)
 
     result = calculate_leasing(**form.to_kwargs())
     context = {"form": form, "terms": terms, "partners": partners, "result": result}
 
     name = (request.POST.get("name") or "").strip()
     phone = (request.POST.get("phone") or "").strip()
-    if name and phone and check_lead_throttles(request):
+    if not live_recalculation and name and phone and check_lead_throttles(request):
         create_lead(
             data={
                 "type": Lead.Type.LEASING,

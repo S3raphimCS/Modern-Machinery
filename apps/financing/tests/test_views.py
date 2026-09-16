@@ -66,14 +66,29 @@ def test_advance_outside_terms_is_rejected(client, branch, terms):
     """Границы калькулятора задаются условиями в админке, а не в коде."""
     response = client.post(reverse("financing:leasing"), {**CALC_INPUT, "advance_percent": "5"})
 
-    assert response.status_code == 400
     assert "advance_percent" in response.context["form"].errors
 
 
 def test_term_outside_range_is_rejected(client, branch, terms):
     response = client.post(reverse("financing:leasing"), {**CALC_INPUT, "months": "120"})
 
-    assert response.status_code == 400
+    assert "months" in response.context["form"].errors
+
+
+def test_invalid_input_answers_with_a_code_htmx_will_swap(client, branch, terms):
+    """Ответ с ошибкой должен доезжать до страницы.
+
+    htmx по умолчанию не подставляет ответы с кодом 4xx: прежний код 400
+    означал, что сообщение о неверном значении молча не показывалось.
+    """
+    response = client.post(
+        reverse("financing:leasing"),
+        {**CALC_INPUT, "months": "120"},
+        headers={"hx-request": "true"},
+    )
+
+    assert response.status_code == 200
+    assert "расчёт не получился" in response.content.decode()
 
 
 def test_calculation_without_contacts_creates_no_lead(client, branch, terms, consent):
@@ -128,3 +143,53 @@ def test_no_monthly_payment_when_price_on_request(client, machine, terms):
     machine.save()
 
     assert "в лизинг" not in client.get(machine.get_absolute_url()).content.decode()
+
+
+def test_live_recalculation_creates_no_lead(client, branch, terms, consent):
+    """Пересчёт по ходу ввода приходит на каждое изменение поля.
+
+    К этому моменту человек уже мог набрать имя и телефон в соседнем блоке —
+    и каждая следующая цифра создавала бы заявку.
+    """
+    client.post(
+        reverse("financing:leasing"),
+        {**CALC_INPUT, "action": "calc", "name": "Иван Петров", "phone": "+7 914 771-05-42"},
+    )
+
+    assert Lead.objects.count() == 0
+
+
+def test_live_recalculation_still_returns_the_result(client, branch, terms):
+    response = client.post(reverse("financing:leasing"), {**CALC_INPUT, "action": "calc"})
+
+    assert response.status_code == 200
+    assert response.context["result"].monthly_payment > 0
+
+
+def test_button_still_sends_the_calculation(client, branch, terms, consent):
+    """Отправка кнопкой не помечена `action`, поэтому заявка создаётся."""
+    client.post(
+        reverse("financing:leasing"),
+        {**CALC_INPUT, "name": "Иван Петров", "phone": "+7 914 771-05-42"},
+    )
+
+    assert Lead.objects.count() == 1
+
+
+def test_price_is_not_restricted_to_round_amounts(client, branch, terms):
+    """Шаг у поля с числом — это правило проверки, а не удобная кнопка.
+
+    С `step="100000"` браузер отказывался принимать 14 950 000 и предлагал
+    «число от 14900001 до 15000001».
+    """
+    response = client.post(reverse("financing:leasing"), {**CALC_INPUT, "price": "14950000.50"})
+
+    assert not response.context["form"].errors
+    assert 'step="any"' in client.get(reverse("financing:leasing")).content.decode()
+
+
+def test_placeholder_does_not_point_sideways(client, branch, terms):
+    """На телефоне форма стоит над результатом, и «слева» там неверно."""
+    body = client.get(reverse("financing:leasing")).content.decode()
+
+    assert "слева" not in body
