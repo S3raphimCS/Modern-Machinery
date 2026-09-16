@@ -47,8 +47,12 @@ COPY --from=builder --chown=app:app /app /app
 
 # Каталог /app остаётся недоступным приложению на запись — это нарочно.
 # Всё, что пишется в рантайме, живёт в отдельных каталогах.
-RUN mkdir -p /app/media /app/staticfiles /var/lib/celery \
-    && chown -R app:app /app/media /app/staticfiles /var/lib/celery
+# private_media обязателен здесь, хотя это точка монтирования тома: Docker
+# создаёт недостающий каталог от root, и процесс от app в него уже не запишет —
+# вложение к заявке падало с ошибкой сервера. Существующий в образе каталог
+# Docker переносит в пустой том вместе с владельцем.
+RUN mkdir -p /app/media /app/staticfiles /app/private_media /var/lib/celery \
+    && chown -R app:app /app/media /app/staticfiles /app/private_media /var/lib/celery
 
 COPY --chown=app:app compose/production/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

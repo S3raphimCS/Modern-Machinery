@@ -843,6 +843,8 @@ textarea.mm-input { min-height: 96px; resize: vertical; }
 
 .mm-form__consent { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--mm-muted); }
 .mm-form__errors { color: var(--mm-red-dark); font-size: 13px; }
+/* Сообщение о сбое запроса: ставится скриптом, поэтому отбивается сверху. */
+.mm-request-error { margin-top: 10px; }
 .mm-form__success {
   border: 1px solid var(--mm-green); color: var(--mm-green);
   padding: 18px; font-family: var(--mm-font-display); font-weight: 600;

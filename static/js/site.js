@@ -207,3 +207,59 @@
     nav.style.borderBottom = "3px solid #16181C";
   });
 })();
+
+/*
+ * Видимый ответ на сбой запроса.
+ *
+ * htmx по умолчанию не подставляет ответы с кодом 4xx и 5xx: при ошибке
+ * сервера страница просто ничего не делала, и человек видел молчащую кнопку.
+ * Единственным следом была вкладка «Сеть» в инструментах разработчика.
+ */
+(function () {
+  "use strict";
+
+  var MESSAGE_CLASS = "mm-request-error";
+
+  function showError(event, text) {
+    var source = event.detail && event.detail.elt;
+    if (!source) {
+      return;
+    }
+
+    /* Сообщение кладётся рядом с тем, что запрос вызвало: в модальном окне
+       заявки, под кнопкой калькулятора — там, куда человек смотрит. */
+    var holder = source.closest("form") || source;
+    var existing = holder.querySelector("." + MESSAGE_CLASS);
+    if (!existing) {
+      existing = document.createElement("div");
+      existing.className = "mm-form__errors " + MESSAGE_CLASS;
+      existing.setAttribute("role", "alert");
+      holder.appendChild(existing);
+    }
+    existing.textContent = text;
+  }
+
+  document.addEventListener("htmx:responseError", function (event) {
+    var status = event.detail && event.detail.xhr && event.detail.xhr.status;
+    if (status === 413) {
+      showError(event, "Файл слишком большой. Приложите файл до 10 МБ.");
+    } else {
+      showError(
+        event,
+        "Не удалось отправить — попробуйте ещё раз или позвоните нам."
+      );
+    }
+  });
+
+  document.addEventListener("htmx:sendError", function (event) {
+    showError(event, "Нет связи с сервером. Проверьте подключение.");
+  });
+
+  /* Успешный ответ снимает прежнее сообщение. */
+  document.addEventListener("htmx:afterSwap", function () {
+    var stale = document.querySelectorAll("." + MESSAGE_CLASS);
+    for (var i = 0; i < stale.length; i++) {
+      stale[i].remove();
+    }
+  });
+})();

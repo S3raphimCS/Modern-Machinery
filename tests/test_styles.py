@@ -47,7 +47,9 @@ def test_project_classes_are_actually_used():
     Модификаторы состояния (`is-active`, `--empty`) навешиваются скриптом, а не
     в разметке, поэтому исключены из проверки.
     """
-    script_driven = {"mm-htmx-indicator", "mm-compare-bar__text"}
+    # `mm-request-error` ставит site.js на сбое запроса: в шаблонах его нет и
+    # быть не может — сообщение появляется там, где запрос не дошёл до сервера.
+    script_driven = {"mm-htmx-indicator", "mm-compare-bar__text", "mm-request-error"}
     defined = collect_defined_classes()
     used = set(collect_used_classes())
 
