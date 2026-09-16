@@ -1,3 +1,4 @@
+{% load financing l10n %}
 <article class="mm-card">
   {% comment %}
     Изображение ведёт на карточку: попадать по названию неудобно, а картинка
@@ -43,6 +44,14 @@
     </dl>
 
     <div class="mm-card__price">{{ machine.display_price }}</div>
+    {% if not machine.is_price_on_request and machine.price %}
+      {% leasing_monthly machine.price as monthly %}
+      {% if monthly %}
+        <span class="mm-leasing-hint">
+          или <b>{{ monthly|floatformat:"0g" }} ₽/мес</b> в лизинг
+        </span>
+      {% endif %}
+    {% endif %}
 
     <label class="mm-compare-toggle">
       <input type="checkbox" data-mm-compare="{{ machine.slug }}"

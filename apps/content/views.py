@@ -19,7 +19,7 @@ from apps.leads.services.creation import create_lead
 from apps.leads.services.tco import calculate_tco
 from apps.leads.throttling import check_lead_throttles
 
-from .models import NewsPost, Page, Vacancy
+from .models import NewsPost, Page, Review, ReviewSource, Vacancy
 
 # Тип заявки задаётся страницей, а не пользователем: иначе форму можно
 # использовать для подмены маршрутизации.
@@ -65,6 +65,28 @@ class NewsDetailView(DetailView):
 
     def get_queryset(self):
         return NewsPost.objects.visible().prefetch_related("categories", "machines__brand")
+
+
+class ReviewListView(ListView):
+    """Страница отзывов.
+
+    Микроразметки здесь нет намеренно: отзыв организации о самой себе не даёт
+    звёзд в выдаче по правилам поисковиков, а перенос чужих рейтингов в свою
+    разметку прямо запрещён. Разметка ставится только на карточке техники,
+    где отзыв относится к товару.
+    """
+
+    template_name = "content/review_list.html"
+    context_object_name = "reviews"
+    paginate_by = 20
+
+    def get_queryset(self):
+        return Review.objects.visible().select_related("machine", "service")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["sources"] = ReviewSource.objects.filter(is_active=True)
+        return context
 
 
 class VacancyListView(ListView):
@@ -119,7 +141,7 @@ def lead_create(request, lead_type: str):
         context = {"error": "Слишком много заявок с вашего адреса. Попробуйте позже."}
         return render(request, "leads/partials/form_error.html", context, status=429)
 
-    form = form_class(request.POST)
+    form = form_class(request.POST, request.FILES)
     if not form.is_valid():
         return render(
             request,
@@ -131,7 +153,10 @@ def lead_create(request, lead_type: str):
     data = form.to_lead_data()
     data["type"] = lead_type
     lead, created = create_lead(
-        data=data, request=request, consent_given=form.cleaned_data["consent"]
+        data=data,
+        request=request,
+        consent_given=form.cleaned_data["consent"],
+        files=form.cleaned_data.get("attachments"),
     )
     return render(request, "leads/partials/form_success.html", {"lead": lead, "created": created})
 

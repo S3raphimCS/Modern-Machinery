@@ -5,9 +5,35 @@
 """
 
 from django.contrib import admin
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import format_html
 
-from .models import ConsentVersion, Lead, LeadEvent, LeadRoutingRule
+from .models import ConsentVersion, Lead, LeadAttachment, LeadEvent, LeadRoutingRule
+
+
+class LeadAttachmentInline(admin.TabularInline):
+    model = LeadAttachment
+    extra = 0
+    fields = ["download", "original_name", "display_size", "created_at"]
+    readonly_fields = ["download", "original_name", "display_size", "created_at"]
+    can_delete = True
+
+    def has_add_permission(self, request, obj=None) -> bool:
+        # Вложения приходят от посетителя вместе с заявкой; добавлять их
+        # руками в админке незачем.
+        return False
+
+    @admin.display(description="Файл")
+    def download(self, obj: LeadAttachment) -> str:
+        if not obj.pk:
+            return "—"
+        url = reverse("lead-attachment", args=[obj.pk])
+        return format_html('<a href="{}">Скачать</a>', url)
+
+    @admin.display(description="Размер")
+    def display_size(self, obj: LeadAttachment) -> str:
+        return obj.display_size
 
 
 class LeadEventInline(admin.TabularInline):
@@ -33,7 +59,7 @@ class LeadAdmin(admin.ModelAdmin):
     list_editable = ["status", "assigned_to"]
     search_fields = ["name", "phone", "email", "company", "message"]
     date_hierarchy = "created_at"
-    inlines = [LeadEventInline]
+    inlines = [LeadAttachmentInline, LeadEventInline]
     autocomplete_fields = ["machine", "part", "service"]
     actions = ["mark_in_progress", "mark_done", "mark_spam"]
     readonly_fields = [

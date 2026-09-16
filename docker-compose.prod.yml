@@ -20,6 +20,8 @@ x-django-common: &django-common
     REDIS_URL: redis://redis:6379/0
     CACHE_URL: redis://redis:6379/0
     CELERY_BROKER_URL: redis://redis:6379/1
+    PRIVATE_MEDIA_ROOT: /app/private_media
+    PRIVATE_MEDIA_INTERNAL_URL: /protected-leads
   depends_on:
     db:
       condition: service_healthy
@@ -80,6 +82,7 @@ services:
     volumes:
       - media:/app/media
       - static:/app/staticfiles
+      - private_media:/app/private_media
     deploy:
       resources:
         limits:
@@ -87,11 +90,13 @@ services:
 
   worker:
     <<: *django-common
+    # Воркер читает вложения, когда прикладывает их к письму.
+    volumes:
+      - media:/app/media
+      - private_media:/app/private_media
     # Воркер не должен выполнять миграции и собирать статику: это делает web.
     entrypoint: []
     command: ["celery", "-A", "config", "worker", "--loglevel", "info", "--concurrency", "4"]
-    volumes:
-      - media:/app/media
     healthcheck:
       # Форма CMD-SHELL обязательна: в exec-форме переменная не раскрывается,
       # и celery искал бы узел с именем «celery@$HOSTNAME» буквально —
@@ -149,6 +154,9 @@ services:
       - ./compose/production/nginx/proxy_params.conf:/etc/nginx/proxy_params.conf:ro
       - static:/app/staticfiles:ro
       - media:/app/media:ro
+      # Только на чтение: nginx отдаёт эти файлы исключительно по
+      # X-Accel-Redirect, после проверки прав в Django.
+      - private_media:/app/private_media:ro
       # Сертификаты и каталог проверки общие с certbot.
       - letsencrypt:/etc/letsencrypt
       - certbot_www:/var/www/certbot
@@ -211,6 +219,7 @@ volumes:
   redis_data:
   media:
   static:
+  private_media:
   letsencrypt:
   certbot_www:
   celery_beat:

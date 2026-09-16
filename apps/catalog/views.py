@@ -12,6 +12,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import DetailView, TemplateView, View
 
+from apps.company.models import DeliveryOption
 from apps.leads.forms import MachineLeadForm
 from apps.specs.models import SpecKey
 
@@ -99,7 +100,9 @@ class CatalogLandingView(MachineListView):
 
     def get(self, request, slug: str, **kwargs):
         self.landing = get_object_or_404(
-            CatalogLanding.objects.select_related("brand", "machine_type", "category"),
+            CatalogLanding.objects.select_related(
+                "brand", "machine_type", "category"
+            ).prefetch_related("spec_conditions__spec_key"),
             slug=slug,
             is_published=True,
         )
@@ -109,6 +112,15 @@ class CatalogLandingView(MachineListView):
         """Условия подборки жёстко добавляются к тем, что выбрал посетитель."""
         filters = super().get_filters(request, spec_keys)
         landing = self.landing
+
+        # Диапазоны подборки перекрывают выбранные посетителем: иначе одна и
+        # та же страница отдавала бы разный товар по одному адресу.
+        numeric = dict(filters.numeric)
+        # Предзагруженный набор: `select_related` здесь сделал бы новый
+        # запрос и обесценил prefetch_related из get().
+        for condition in landing.spec_conditions.all():
+            numeric[condition.spec_key.code] = (condition.value_min, condition.value_max)
+
         return replace(
             filters,
             brands=[landing.brand.slug] if landing.brand_id else filters.brands,
@@ -116,6 +128,7 @@ class CatalogLandingView(MachineListView):
                 [landing.machine_type.slug] if landing.machine_type_id else filters.machine_types
             ),
             categories=[landing.category.slug] if landing.category_id else filters.categories,
+            numeric=numeric,
         )
 
     def get_landings(self):
@@ -134,7 +147,14 @@ class CatalogLandingView(MachineListView):
         }
 
     def _landing_conditions(self) -> int:
-        return sum(
+        """Сколько условий задаёт сама подборка.
+
+        По этому числу отличается «подборка как есть» от «подборки с
+        посторонним фильтром»: первая индексируется, вторая нет. Диапазоны
+        обязаны сюда попасть, иначе подборка по массе считалась бы
+        отфильтрованной и уходила в noindex.
+        """
+        own = sum(
             1
             for value in (
                 self.landing.brand_id,
@@ -143,6 +163,9 @@ class CatalogLandingView(MachineListView):
             )
             if value
         )
+        # len по предзагруженному набору, а не count(): иначе это ещё
+        # один запрос на каждый показ страницы.
+        return own + len(self.landing.spec_conditions.all())
 
 
 class MachineDetailView(DetailView):
@@ -169,6 +192,8 @@ class MachineDetailView(DetailView):
         context["related_parts"] = machine.parts.select_related("part", "part__brand").filter(
             part__is_active=True, part__is_published=True
         )[:6]
+        context["reviews"] = machine.reviews.filter(is_published=True)[:4]
+        context["delivery_options"] = DeliveryOption.objects.filter(is_active=True)[:4]
         context["similar_machines"] = (
             Machine.objects.visible()
             .with_listing_relations()

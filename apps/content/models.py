@@ -5,7 +5,12 @@ from django.db import models
 from django.urls import reverse
 from treebeard.mp_tree import MP_Node
 
-from apps.core.models import PublishableMixin, SeoMixin, SortableMixin, TimeStampedModel
+from apps.core.models import (
+    PublishableMixin,
+    SeoMixin,
+    SortableMixin,
+    TimeStampedModel,
+)
 
 
 class Page(MP_Node, SeoMixin, PublishableMixin, TimeStampedModel):
@@ -116,6 +121,148 @@ class NewsPost(TimeStampedModel, SeoMixin, PublishableMixin):
 
     def get_absolute_url(self) -> str:
         return reverse("content:news-detail", kwargs={"slug": self.slug})
+
+
+class Review(TimeStampedModel, PublishableMixin, SortableMixin):
+    """Отзыв клиента, собранный менеджером.
+
+    Публичной формы нет намеренно: в B2B отзывы собирают при разговоре, а
+    открытая форма принесла бы спам и чужие персональные данные, которые
+    пришлось бы хранить и обезличивать.
+
+    Отзыв можно привязать к модели техники или услуге — тогда он показывается
+    на соответствующей карточке. Только там ставится микроразметка: отзыв о
+    товаре размечать можно, отзыв организации о самой себе — нет.
+    """
+
+    author_name = models.CharField("Имя", max_length=160)
+    author_position = models.CharField("Должность", max_length=160, blank=True)
+    company = models.CharField("Компания", max_length=200, blank=True)
+    city = models.CharField("Город", max_length=120, blank=True)
+
+    rating = models.PositiveSmallIntegerField(
+        "Оценка",
+        choices=[(value, "★" * value) for value in range(1, 6)],
+        default=5,
+    )
+    text = models.TextField("Текст отзыва")
+
+    machine = models.ForeignKey(
+        "catalog.Machine",
+        verbose_name="Техника",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviews",
+    )
+    service = models.ForeignKey(
+        "services.Service",
+        verbose_name="Услуга",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviews",
+    )
+    source_note = models.CharField(
+        "Откуда отзыв",
+        max_length=120,
+        blank=True,
+        help_text="Например: «перенесён из 2ГИС с разрешения автора».",
+    )
+
+    objects = NewsQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = "Отзыв"
+        verbose_name_plural = "Отзывы"
+        ordering = ["-published_at", "sort_order"]
+        constraints = [
+            models.CheckConstraint(
+                name="review_rating_in_range",
+                condition=models.Q(rating__gte=1, rating__lte=5),
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.author_name} — {self.rating}★"
+
+    @property
+    def signature(self) -> str:
+        """Подпись под отзывом: должность, компания, город."""
+        parts = [self.author_position, self.company, self.city]
+        return ", ".join(part for part in parts if part)
+
+
+class ReviewSource(SortableMixin):
+    """Рейтинг компании на внешней площадке.
+
+    Показывается ссылкой на источник, без переноса текстов: копировать чужие
+    отзывы нельзя, а переносить их оценки в свою микроразметку прямо
+    запрещено правилами поисковиков.
+
+    Заполняется вручную: 2ГИС и Google не отдают отзывы через публичный API,
+    а меняется такое раз в квартал.
+    """
+
+    class Platform(models.TextChoices):
+        YANDEX = "yandex", "Яндекс Карты"
+        GIS = "2gis", "2ГИС"
+        GOOGLE = "google", "Google"
+
+    platform = models.CharField("Площадка", max_length=16, choices=Platform.choices, unique=True)
+    rating = models.DecimalField("Рейтинг", max_digits=2, decimal_places=1)
+    reviews_count = models.PositiveIntegerField("Число оценок", default=0)
+    url = models.URLField("Ссылка на карточку")
+    widget_code = models.TextField(
+        "Код виджета",
+        blank=True,
+        help_text="Только для Яндекса: код виджета отзывов из Яндекс Карт. "
+        "Он подтягивает отзывы сам и обновляет их каждые 72 часа.",
+    )
+    is_active = models.BooleanField("Показывать", default=True, db_index=True)
+    updated_at = models.DateField("Данные на", auto_now=True)
+
+    class Meta:
+        verbose_name = "Рейтинг на площадке"
+        verbose_name_plural = "Рейтинги на площадках"
+        ordering = ["sort_order", "platform"]
+        constraints = [
+            models.CheckConstraint(
+                name="reviewsource_rating_in_range",
+                condition=models.Q(rating__gte=0, rating__lte=5),
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.get_platform_display()}: {self.rating}"
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def clean(self) -> None:
+        """Проверяет, что в поле виджета именно виджет Яндекса.
+
+        Содержимое выводится на публичной странице без экранирования, иначе
+        `iframe` не отрисуется. Политика безопасности сейчас не даст выполнить
+        подставленный скрипт, но полагаться на неё одну нельзя: любое её
+        ослабление превратило бы это поле в уязвимость.
+        """
+        code = (self.widget_code or "").strip()
+        if not code:
+            return
+
+        allowed_start = "<iframe"
+        allowed_src = "https://yandex.ru/maps-reviews-widget/"
+        if not code.startswith(allowed_start) or allowed_src not in code:
+            raise ValidationError(
+                {
+                    "widget_code": "Ожидается код виджета отзывов Яндекс Карт: "
+                    f"тег iframe со ссылкой на {allowed_src}"
+                }
+            )
+        if "<script" in code.lower() or "javascript:" in code.lower():
+            raise ValidationError({"widget_code": "Скрипты в коде виджета запрещены."})
 
 
 class Vacancy(TimeStampedModel, SeoMixin, PublishableMixin):

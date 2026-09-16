@@ -5,8 +5,10 @@
   Поле-ловушка `website` спрятано в CSS и не имеет подписи — человек его не
   видит и не заполняет, бот заполняет почти всегда.
 {% endcomment %}
-<form class="mm-form" method="post" action="{% url 'content:lead-create' lead_type %}"
+<form class="mm-form" method="post" enctype="multipart/form-data"
+      action="{% url 'content:lead-create' lead_type %}"
       hx-post="{% url 'content:lead-create' lead_type %}"
+      hx-encoding="multipart/form-data"
       hx-target="this" hx-swap="outerHTML">
   {% csrf_token %}
 
@@ -50,6 +52,22 @@
   {% endif %}
   {% if lead_form.service %}
     <input type="hidden" name="service" value="{{ lead_form.service.value|default:'' }}">
+  {% endif %}
+
+  {% if not compact %}
+    <div class="mm-form__row">
+      <label class="mm-form__file">
+        <input type="file" name="attachments" multiple
+               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+        <span class="mm-form__file-text">
+          Прикрепить файлы
+          <em>спецификация, ТЗ или список артикулов — PDF, Word, Excel, фото</em>
+        </span>
+      </label>
+      {% if lead_form.attachments.errors %}
+        <div class="mm-form__errors">{{ lead_form.attachments.errors.0 }}</div>
+      {% endif %}
+    </div>
   {% endif %}
 
   <div class="mm-form__honeypot" aria-hidden="true">

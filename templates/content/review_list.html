@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load l10n %}
+
+{% block title %}Отзывы клиентов — Модерн Машинери Хабаровск{% endblock %}
+{% block meta_description %}Что говорят о работе филиала в Хабаровске: отзывы предприятий о поставке техники, запчастях и сервисном обслуживании.{% endblock %}
+
+{% comment %}
+  Микроразметки на этой странице нет намеренно. Отзыв организации о самой
+  себе не даёт звёзд в выдаче по правилам поисковиков, а перенос рейтингов с
+  чужих площадок в свою разметку прямо запрещён. Разметка ставится только на
+  карточке техники, где отзыв относится к товару.
+{% endcomment %}
+
+{% block content %}
+  <nav class="mm-breadcrumbs">
+    <a href="{% url 'catalog:machine-list' %}">Техника</a> › <span>Отзывы</span>
+  </nav>
+
+  <section class="mm-hero">
+    <div class="mm-hero__eyebrow">Что говорят клиенты</div>
+    <h1 class="mm-hero__title">Отзывы</h1>
+    <p class="mm-hero__text">
+      Предприятия Хабаровского края о поставке техники, запчастях и работе
+      сервисного центра.
+    </p>
+  </section>
+
+  {% if sources %}
+    <div class="mm-section">
+      <h2 class="mm-section__title">Оценки на площадках</h2>
+      <div class="mm-sources">
+        {% for source in sources %}
+          <a class="mm-sources__item" href="{{ source.url }}"
+             target="_blank" rel="noopener nofollow">
+            <div class="mm-sources__platform">{{ source.get_platform_display }}</div>
+            <div class="mm-sources__rating">{{ source.rating|unlocalize }}</div>
+            <div class="mm-sources__count">{{ source.reviews_count }} оценок</div>
+          </a>
+        {% endfor %}
+      </div>
+      <p class="mm-tco__disclaimer" style="margin-top:12px;">
+        Данные на {{ sources.0.updated_at|date:"d.m.Y" }}. Отзывы целиком —
+        по ссылке на площадку.
+      </p>
+    </div>
+  {% endif %}
+
+  <div class="mm-section">
+    <h2 class="mm-section__title">Отзывы клиентов</h2>
+    {% if reviews %}
+      <div class="mm-reviews">
+        {% for review in reviews %}
+          <article class="mm-review">
+            <div class="mm-review__rating" aria-label="Оценка {{ review.rating }} из 5">
+              {% for _ in "12345"|make_list %}
+                <span class="mm-review__star{% if forloop.counter <= review.rating %} is-on{% endif %}">★</span>
+              {% endfor %}
+            </div>
+            <blockquote class="mm-review__text">{{ review.text|linebreaks }}</blockquote>
+            <footer class="mm-review__author">
+              <div class="mm-review__name">{{ review.author_name }}</div>
+              {% if review.signature %}
+                <div class="mm-review__signature">{{ review.signature }}</div>
+              {% endif %}
+              {% if review.machine %}
+                <a class="mm-review__subject" href="{{ review.machine.get_absolute_url }}">
+                  {{ review.machine }}
+                </a>
+              {% elif review.service %}
+                <a class="mm-review__subject" href="{{ review.service.get_absolute_url }}">
+                  {{ review.service.name }}
+                </a>
+              {% endif %}
+              <div class="mm-review__date">{{ review.published_at|date:"F Y" }}</div>
+            </footer>
+          </article>
+        {% endfor %}
+      </div>
+      {% include "catalog/partials/pagination.html" %}
+    {% else %}
+      <p class="mm-empty">Отзывы скоро появятся.</p>
+    {% endif %}
+  </div>
+
+  {% for source in sources %}
+    {% if source.widget_code %}
+      <div class="mm-section">
+        <h2 class="mm-section__title">{{ source.get_platform_display }}</h2>
+        {# Виджет подтягивает отзывы сам и обновляет их каждые 72 часа. #}
+        <div class="mm-widget">{{ source.widget_code|safe }}</div>
+      </div>
+    {% endif %}
+  {% endfor %}
+{% endblock %}

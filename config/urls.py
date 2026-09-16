@@ -8,12 +8,15 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from apps.core.views import healthcheck
+from apps.leads.views import lead_attachment
 from apps.seo.sitemaps import SITEMAPS
 from apps.seo.views import robots_txt
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("healthz/", healthcheck, name="healthcheck"),
+    # Файлы заявок отдаются только сотрудникам, публичного адреса у них нет.
+    path("zayavki/vlozhenie/<int:pk>/", lead_attachment, name="lead-attachment"),
     # API
     path("api/v1/", include("config.api_urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
@@ -30,6 +33,8 @@ urlpatterns = [
     # Публичные разделы. ЧПУ на латинице — под региональные геозапросы.
     path("zapchasti/", include("apps.parts.urls", namespace="parts")),
     path("uslugi/", include("apps.services.urls", namespace="services")),
+    path("lizing/", include("apps.financing.urls", namespace="financing")),
+    path("dostavka/", include("apps.company.urls", namespace="company")),
     # Каталог техники смонтирован в корень: он же главная страница сайта,
     # а карточки живут на /tehnika/<slug>/.
     path("", include("apps.catalog.urls", namespace="catalog")),

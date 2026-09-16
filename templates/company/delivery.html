@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Доставка спецтехники по Дальнему Востоку — Модерн Машинери{% endblock %}
+{% block meta_description %}Как доставляем технику из Хабаровска: перегон своим ходом, автовоз, железная дорога, морем через Ванино и Советскую Гавань. Сроки и условия.{% endblock %}
+
+{% block content %}
+  <nav class="mm-breadcrumbs">
+    <a href="{% url 'catalog:machine-list' %}">Техника</a> › <span>Доставка</span>
+  </nav>
+
+  <section class="mm-hero">
+    <div class="mm-hero__eyebrow">Отгрузка со склада в Хабаровске</div>
+    <h1 class="mm-hero__title">Доставка<br>на объект</h1>
+    <p class="mm-hero__text">
+      Расстояния на Дальнем Востоке такие, что способ доставки обсуждают
+      раньше цены. Подбираем вариант под маршрут, габариты машины и сроки
+      работ на объекте.
+    </p>
+  </section>
+
+  <div class="mm-services">
+    {% for option in options %}
+      <article class="mm-service">
+        <div class="mm-service__name">{{ option.name }}</div>
+        {% if option.description %}
+          <p class="mm-service__desc">{{ option.description }}</p>
+        {% endif %}
+        <div class="mm-service__meta">
+          {% if option.lead_time %}
+            <div>
+              <div class="mm-service__meta-label">Срок</div>
+              <div class="mm-service__meta-value">{{ option.lead_time }}</div>
+            </div>
+          {% endif %}
+          {% if option.note %}
+            <div>
+              <div class="mm-service__meta-label">Особенности</div>
+              <div class="mm-service__meta-value">{{ option.note }}</div>
+            </div>
+          {% endif %}
+        </div>
+      </article>
+    {% empty %}
+      <p class="mm-empty">Способы доставки уточняйте у менеджера.</p>
+    {% endfor %}
+  </div>
+
+  <div class="mm-section">
+    <h2 class="mm-section__title">Как рассчитывается</h2>
+    <div class="mm-prose">
+      <p>Стоимость зависит от расстояния, габаритов и массы машины: часть
+        техники идёт негабаритом и требует согласования маршрута. Точную
+        цифру менеджер называет после уточнения адреса объекта.</p>
+      {% if branch %}
+        <p>Отгрузка идёт со склада по адресу {{ branch.city }},
+          {{ branch.address }}.</p>
+      {% endif %}
+    </div>
+    <a class="mm-btn mm-btn--primary" style="margin-top:8px;" href="#"
+       hx-get="{% url 'content:lead-form-modal' %}?type=selection"
+       hx-target="#mm-modal-root" hx-swap="innerHTML">Рассчитать доставку</a>
+  </div>
+{% endblock %}

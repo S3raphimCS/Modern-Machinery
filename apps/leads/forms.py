@@ -16,10 +16,45 @@ from django.core import signing
 
 from apps.catalog.models import Machine
 from apps.leads.models import Lead
+from apps.leads.validators import (
+    ALLOWED_EXTENSIONS,
+    MAX_FILES_PER_LEAD,
+    LeadFileValidator,
+)
 from apps.parts.models import Part
 from apps.services.models import Service
 
 FORM_TS_SALT = "leads.form.timestamp"
+
+
+class MultipleFileInput(forms.ClearableFileInput):
+    """Поле выбора нескольких файлов.
+
+    Начиная с Django 5.0 обычный виджет с `multiple` намеренно запрещён:
+    он молча терял все файлы, кроме последнего. Пара «виджет + поле» ниже —
+    рекомендованный способ обойтись без этой ловушки.
+    """
+
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    """Файловое поле, возвращающее список файлов и проверяющее каждый."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single = super().clean
+        if isinstance(data, list | tuple):
+            files = [single(item, initial) for item in data if item]
+        else:
+            files = [single(data, initial)] if data else []
+
+        if len(files) > MAX_FILES_PER_LEAD:
+            raise forms.ValidationError(f"Можно приложить не больше {MAX_FILES_PER_LEAD} файлов.")
+        return files
 
 
 class LeadForm(forms.Form):
@@ -34,6 +69,13 @@ class LeadForm(forms.Form):
     email = forms.EmailField(label="E-mail", required=False)
     company = forms.CharField(label="Компания", max_length=200, required=False)
     message = forms.CharField(label="Комментарий", widget=forms.Textarea, required=False)
+    attachments = MultipleFileField(
+        label="Прикрепить файлы",
+        required=False,
+        validators=[LeadFileValidator()],
+        help_text=f"Спецификация, техническое задание или список артикулов. "
+        f"До {MAX_FILES_PER_LEAD} файлов: {', '.join(sorted(ALLOWED_EXTENSIONS))}.",
+    )
     consent = forms.BooleanField(label="Согласен на обработку персональных данных", required=True)
 
     # Ловушка: поле скрыто стилями, человек его не видит и не заполняет.

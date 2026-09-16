@@ -27,6 +27,7 @@ def send_lead_notification(self, lead_id: int, recipients: list[str]) -> str:
     lead = (
         Lead.objects.filter(pk=lead_id)
         .select_related("machine", "part", "service", "department")
+        .prefetch_related("attachments")
         .first()
     )
     if lead is None:  # pragma: no cover
@@ -69,6 +70,7 @@ def send_lead_notification(self, lead_id: int, recipients: list[str]) -> str:
             to=recipients,
         )
         message.attach_alternative(html_body, "text/html")
+        _attach_files(message, lead)
         message.send(fail_silently=False)
     except Exception as exc:
         LeadEvent.objects.create(
@@ -83,6 +85,33 @@ def send_lead_notification(self, lead_id: int, recipients: list[str]) -> str:
         comment="Отправлено: " + ", ".join(recipients),
     )
     return "sent"
+
+
+def _attach_files(message, lead) -> None:
+    """Прикладывает файлы заявки к письму.
+
+    Крупные вложения не отправляются: почтовые серверы их отклоняют, и не
+    дойдёт всё письмо вместе с самой заявкой. В таком случае менеджер
+    открывает файл по ссылке в админке, которая есть в письме всегда.
+    """
+    budget = settings.LEAD_EMAIL_ATTACHMENT_LIMIT
+    used = 0
+
+    for attachment in lead.attachments.all():
+        if used + attachment.size > budget:
+            logger.info(
+                "Файл %s не вложен в письмо по заявке %s: превышен лимит размера",
+                attachment.original_name,
+                lead.pk,
+            )
+            continue
+        try:
+            with attachment.file.open("rb") as handle:
+                message.attach(attachment.original_name, handle.read())
+        except (OSError, ValueError):
+            logger.warning("Не удалось прочитать вложение %s", attachment.pk)
+            continue
+        used += attachment.size
 
 
 @shared_task
@@ -106,6 +135,10 @@ def purge_expired_leads() -> int:
         lead.user_agent = ""
         lead.payload = {}
         lead.is_anonymized = True
+        # Вложения удаляются вместе с полями: документы клиента — такие же
+        # персональные данные, и оставлять их на диске после срока нельзя.
+        for attachment in lead.attachments.all():
+            attachment.delete()
         lead.save(
             update_fields=[
                 "name",

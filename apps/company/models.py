@@ -42,6 +42,35 @@ class Branch(TimeStampedModel, SeoMixin, PublishableMixin, SortableMixin):
         return f"/o-kompanii/{self.slug}/"
 
 
+class DeliveryOption(SortableMixin):
+    """Способ доставки техники до объекта.
+
+    Для Дальнего Востока это вопрос первого разговора: расстояния такие, что
+    «как привезут» выясняют раньше, чем характеристики. Поэтому способы
+    доставки показываются и отдельной страницей, и блоком прямо на карточке
+    техники.
+    """
+
+    name = models.CharField("Название", max_length=160)
+    description = models.TextField("Описание", blank=True)
+    lead_time = models.CharField("Срок", max_length=120, blank=True)
+    note = models.CharField(
+        "Примечание",
+        max_length=200,
+        blank=True,
+        help_text="Например: «до портов Ванино и Советская Гавань».",
+    )
+    is_active = models.BooleanField("Показывать", default=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Способ доставки"
+        verbose_name_plural = "Доставка"
+        ordering = ["sort_order", "name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class Department(SortableMixin):
     """Отдел филиала: продажи техники, запчасти, сервис, складское оборудование."""
 

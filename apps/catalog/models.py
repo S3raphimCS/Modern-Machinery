@@ -277,6 +277,62 @@ class CatalogLanding(TimeStampedModel, SeoMixin, PublishableMixin, SortableMixin
         return reverse("catalog:landing", kwargs={"slug": self.slug})
 
 
+class CatalogLandingSpec(models.Model):
+    """Условие подборки по числовой характеристике.
+
+    Даёт посадочные страницы под запросы вида «экскаватор 20 тонн»: у
+    конкурента такие разделы есть, а это ровно та региональная низкочастотка,
+    ради которой затевался проект.
+
+    Условий на подборку может быть несколько — например, тип «Экскаватор»
+    плюс масса от 20 до 25 тонн.
+    """
+
+    landing = models.ForeignKey(
+        CatalogLanding,
+        verbose_name="Подборка",
+        on_delete=models.CASCADE,
+        related_name="spec_conditions",
+    )
+    spec_key = models.ForeignKey(
+        "specs.SpecKey",
+        verbose_name="Параметр",
+        on_delete=models.CASCADE,
+        related_name="landing_conditions",
+    )
+    value_min = models.DecimalField("От", max_digits=14, decimal_places=4, null=True, blank=True)
+    value_max = models.DecimalField("До", max_digits=14, decimal_places=4, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Условие по характеристике"
+        verbose_name_plural = "Условия по характеристикам"
+        ordering = ["spec_key__sort_order", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["landing", "spec_key"], name="cataloglandingspec_unique_key"
+            ),
+            # Условие без границ не фильтрует ничего и только сбивает подсчёт
+            # для правила индексации.
+            models.CheckConstraint(
+                name="cataloglandingspec_has_bound",
+                condition=models.Q(value_min__isnull=False) | models.Q(value_max__isnull=False),
+            ),
+            models.CheckConstraint(
+                name="cataloglandingspec_range_ordered",
+                condition=models.Q(value_min__isnull=True)
+                | models.Q(value_max__isnull=True)
+                | models.Q(value_max__gte=models.F("value_min")),
+            ),
+        ]
+
+    def __str__(self) -> str:
+        if self.value_min is not None and self.value_max is not None:
+            return f"{self.spec_key.name}: {self.value_min}–{self.value_max}"
+        if self.value_min is not None:
+            return f"{self.spec_key.name}: от {self.value_min}"
+        return f"{self.spec_key.name}: до {self.value_max}"
+
+
 class MachineImage(SortableMixin):
     """Изображение из галереи модели.
 

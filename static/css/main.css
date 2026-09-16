@@ -546,6 +546,101 @@ textarea.mm-input { min-height: 96px; resize: vertical; }
   margin: 0; font-size: 13px; color: var(--mm-muted); line-height: 1.6;
 }
 
+/* --- Доставка ------------------------------------------------------------- */
+
+.mm-delivery { border: 1px solid var(--mm-border); padding: 16px; margin-bottom: 16px; }
+.mm-delivery__title {
+  font-family: var(--mm-font-display); font-weight: 700; font-size: 12px;
+  letter-spacing: 1.2px; text-transform: uppercase; color: var(--mm-muted);
+  margin-bottom: 10px;
+}
+.mm-delivery__list { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.8; }
+.mm-delivery__link {
+  display: inline-block; margin-top: 10px; font-size: 13px;
+  color: var(--mm-red-dark); text-decoration: underline;
+}
+.mm-delivery__link:hover { color: var(--mm-red); }
+
+/* --- Отзывы --------------------------------------------------------------- */
+
+.mm-sources { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.mm-sources__item {
+  border: 1px solid var(--mm-border); padding: 18px; text-align: center;
+  color: var(--mm-ink);
+  transition: border-color .18s ease, transform .18s ease, box-shadow .2s ease;
+}
+.mm-sources__item:hover {
+  border-color: var(--mm-ink); color: var(--mm-ink);
+  transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15, 17, 20, .08);
+}
+.mm-sources__platform {
+  font-family: var(--mm-font-display); font-size: 12px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase; color: var(--mm-muted);
+}
+.mm-sources__rating {
+  font-family: var(--mm-font-display); font-weight: 800; font-size: 32px;
+  color: var(--mm-ink); margin: 6px 0 2px;
+}
+.mm-sources__count { font-size: 13px; color: var(--mm-muted); }
+
+.mm-reviews { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.mm-review {
+  border: 1px solid var(--mm-border); padding: 22px;
+  display: flex; flex-direction: column; gap: 12px;
+  transition: border-color .18s ease, box-shadow .2s ease;
+}
+.mm-review:hover { border-color: var(--mm-ink); box-shadow: 0 8px 22px rgba(15, 17, 20, .08); }
+.mm-review__rating { display: flex; gap: 2px; font-size: 18px; }
+.mm-review__star { color: var(--mm-border); }
+.mm-review__star.is-on { color: var(--mm-red); }
+.mm-review__text {
+  margin: 0; font-size: 15px; line-height: 1.65; color: #2b2e33;
+  border-left: 3px solid var(--mm-red); padding-left: 14px;
+}
+.mm-review__text p { margin: 0 0 10px; }
+.mm-review__text p:last-child { margin-bottom: 0; }
+.mm-review__author { margin-top: auto; padding-top: 6px; }
+.mm-review__name {
+  font-family: var(--mm-font-display); font-weight: 700; font-size: 15px;
+}
+.mm-review__signature { font-size: 13px; color: var(--mm-muted); margin-top: 2px; }
+.mm-review__subject {
+  display: inline-block; margin-top: 8px; font-size: 13px;
+  color: var(--mm-red-dark); text-decoration: underline;
+}
+.mm-review__date {
+  font-size: 12px; color: var(--mm-muted); margin-top: 6px;
+  text-transform: capitalize;
+}
+
+.mm-widget { border: 1px solid var(--mm-border); overflow: hidden; }
+.mm-widget iframe { display: block; width: 100%; border: 0; }
+
+/* --- Партнёры по финансированию ------------------------------------------ */
+
+.mm-partners { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.mm-partners__item {
+  border: 1px solid var(--mm-border); padding: 18px 16px; text-align: center;
+  display: flex; flex-direction: column; justify-content: center; gap: 8px;
+  min-height: 96px; transition: border-color .18s ease, transform .18s ease;
+}
+.mm-partners__item:hover { border-color: var(--mm-ink); transform: translateY(-2px); }
+.mm-partners__logo { max-height: 40px; width: auto; margin: 0 auto; }
+.mm-partners__name {
+  font-family: var(--mm-font-display); font-weight: 600; font-size: 15px;
+  color: var(--mm-ink);
+}
+.mm-partners__note { font-size: 12px; color: var(--mm-muted); line-height: 1.4; }
+
+/* Платёж по лизингу на карточке техники: он продаёт сильнее, чем страница
+   с условиями, поэтому стоит рядом с ценой. */
+.mm-leasing-hint {
+  display: block; margin-top: 4px; font-size: 13px; color: var(--mm-muted);
+}
+.mm-leasing-hint b { color: var(--mm-red-dark); font-weight: 600; }
+.mm-leasing-hint a { color: inherit; text-decoration: underline; }
+.mm-leasing-hint a:hover { color: var(--mm-red); }
+
 /* --- Карта проезда ------------------------------------------------------- */
 
 .mm-map {
@@ -687,6 +782,22 @@ textarea.mm-input { min-height: 96px; resize: vertical; }
 .mm-form__row { display: grid; gap: 6px; }
 .mm-form label { font-size: 13px; color: var(--mm-muted); }
 .mm-form__honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.mm-form__file {
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+  border: 1px dashed var(--mm-border); padding: 12px 14px;
+  transition: border-color .18s ease, background .18s ease;
+}
+.mm-form__file:hover { border-color: var(--mm-red); background: var(--mm-bg-alt); }
+.mm-form__file input { flex: none; max-width: 190px; font-size: 13px; }
+.mm-form__file-text {
+  font-family: var(--mm-font-display); font-size: 13px; font-weight: 600;
+  color: var(--mm-ink); display: flex; flex-direction: column; gap: 2px;
+}
+.mm-form__file-text em {
+  font-family: var(--mm-font); font-style: normal; font-weight: 400;
+  font-size: 12px; color: var(--mm-muted);
+}
+
 .mm-form__consent { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--mm-muted); }
 .mm-form__errors { color: var(--mm-red-dark); font-size: 13px; }
 .mm-form__success {
@@ -774,6 +885,8 @@ textarea.mm-input { min-height: 96px; resize: vertical; }
 
 @container (max-width: 1080px) {
   .mm-catalog { grid-template-columns: 1fr; }
+  .mm-partners { grid-template-columns: repeat(2, 1fr); }
+  .mm-reviews { grid-template-columns: 1fr; }
   .mm-tco { grid-template-columns: 1fr; }
   .mm-tco__result { position: static; }
   .mm-filters { position: static; }
@@ -795,6 +908,7 @@ textarea.mm-input { min-height: 96px; resize: vertical; }
   .mm-hero__actions .mm-btn { width: 100%; }
   .mm-tco__form { padding: 18px 16px; }
   .mm-footer__cols { grid-template-columns: 1fr; }
+  .mm-sources { grid-template-columns: 1fr; }
   /* Нижняя панель навигации из мобильной версии макета. */
   .mm-tabbar {
     display: grid; grid-template-columns: repeat(4, 1fr);

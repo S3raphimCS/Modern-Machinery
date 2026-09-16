@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load l10n %}
+
+{% block title %}Лизинг и кредит на спецтехнику в Хабаровске — расчёт платежа{% endblock %}
+{% block meta_description %}Лизинг спецтехники в Хабаровске: аванс от {{ terms.min_advance_percent }}%, срок до {{ terms.max_months }} месяцев, решение за {{ terms.decision_days }}. Рассчитайте ежемесячный платёж онлайн.{% endblock %}
+
+{% block content %}
+  <nav class="mm-breadcrumbs">
+    <a href="{% url 'catalog:machine-list' %}">Техника</a> › <span>Лизинг и кредит</span>
+  </nav>
+
+  <section class="mm-hero">
+    <div class="mm-hero__eyebrow">Финансирование покупки</div>
+    <h1 class="mm-hero__title">Лизинг<br>и кредит</h1>
+    <p class="mm-hero__text">
+      {% if terms.intro %}{{ terms.intro }}{% else %}
+        Техника окупается годами, платить за неё сразу не обязательно.
+        Аванс от {{ terms.min_advance_percent }}%, срок до {{ terms.max_months }} месяцев,
+        решение за {{ terms.decision_days }}.
+      {% endif %}
+    </p>
+  </section>
+
+  <div class="mm-stats">
+    <div class="mm-stats__item">
+      <div class="mm-stats__value">от {{ terms.min_advance_percent }}%</div>
+      <div class="mm-stats__label">первоначальный взнос</div>
+    </div>
+    <div class="mm-stats__item">
+      <div class="mm-stats__value">до {{ terms.max_months }} мес</div>
+      <div class="mm-stats__label">срок договора</div>
+    </div>
+    <div class="mm-stats__item">
+      <div class="mm-stats__value">{{ terms.decision_days }}</div>
+      <div class="mm-stats__label">срок решения</div>
+    </div>
+    <div class="mm-stats__item">
+      <div class="mm-stats__value">{{ partners|length }}</div>
+      <div class="mm-stats__label">партнёров по финансированию</div>
+    </div>
+  </div>
+
+  <div class="mm-section">
+    <h2 class="mm-section__title">Калькулятор платежа</h2>
+    <p class="mm-prose">
+      Расчёт ориентировочный: точную ставку лизинговая компания называет после
+      рассмотрения заявки. Но порядок платежа виден сразу.
+    </p>
+
+    <div class="mm-tco">
+      <form class="mm-tco__form" method="post" action="{% url 'financing:leasing' %}"
+            hx-post="{% url 'financing:leasing' %}"
+            hx-target="#mm-leasing-result" hx-swap="innerHTML">
+        {% csrf_token %}
+
+        <fieldset class="mm-tco__group">
+          <legend class="mm-tco__legend">Условия сделки</legend>
+          <div class="mm-tco__fields">
+            {% for item in form.fields_with_units %}
+              <div class="mm-tco__field">
+                <label class="mm-tco__label" for="{{ item.field.id_for_label }}">
+                  {{ item.field.label }}
+                </label>
+                <div class="mm-tco__control">
+                  {{ item.field }}
+                  <span class="mm-tco__unit">{{ item.unit }}</span>
+                </div>
+                {% if item.field.errors %}
+                  <div class="mm-form__errors">{{ item.field.errors.0 }}</div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <fieldset class="mm-tco__group mm-tco__group--contacts">
+          <legend class="mm-tco__legend">Отправить расчёт менеджеру</legend>
+          <p class="mm-tco__hint">
+            Необязательно. Расчёт покажется в любом случае — контакты нужны,
+            только если хотите, чтобы менеджер подобрал программу под вашу
+            компанию.
+          </p>
+          <div class="mm-tco__fields">
+            <div class="mm-tco__field">
+              <label class="mm-tco__label" for="mm-leasing-name">Ваше имя</label>
+              <input class="mm-input" type="text" name="name" id="mm-leasing-name"
+                     placeholder="Иван Петров">
+            </div>
+            <div class="mm-tco__field">
+              <label class="mm-tco__label" for="mm-leasing-phone">Телефон</label>
+              <input class="mm-input" type="tel" name="phone" id="mm-leasing-phone"
+                     inputmode="tel" autocomplete="tel" maxlength="18"
+                     placeholder="+7 (___) ___-__-__">
+            </div>
+          </div>
+        </fieldset>
+
+        <button class="mm-btn mm-btn--primary mm-btn--block" type="submit">
+          Рассчитать <span class="mm-htmx-indicator">…</span>
+        </button>
+      </form>
+
+      <aside class="mm-tco__result" id="mm-leasing-result">
+        {% include "financing/partials/result.html" %}
+      </aside>
+    </div>
+  </div>
+
+  {% if partners %}
+    <div class="mm-section">
+      <h2 class="mm-section__title">С кем работаем</h2>
+      <div class="mm-partners">
+        {% for partner in partners %}
+          <div class="mm-partners__item">
+            {% if partner.logo %}
+              <img class="mm-partners__logo" src="{{ partner.logo.url }}"
+                   alt="{{ partner.name }}" loading="lazy">
+            {% else %}
+              <div class="mm-partners__name">{{ partner.name }}</div>
+            {% endif %}
+            {% if partner.note %}<div class="mm-partners__note">{{ partner.note }}</div>{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="mm-section">
+    <h2 class="mm-section__title">Что понадобится</h2>
+    <div class="mm-prose">
+      <p>Для юридического лица: карточка предприятия, бухгалтерский баланс и
+        отчёт о прибылях и убытках за последний период. Для индивидуального
+        предпринимателя — паспорт и налоговая декларация.</p>
+      <p>Документы можно приложить прямо к заявке — форма принимает PDF,
+        Word, Excel и фотографии.</p>
+    </div>
+  </div>
+{% endblock %}

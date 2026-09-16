@@ -1,0 +1,57 @@
+{% load l10n %}
+{% if result %}
+  <div class="mm-tco__card">
+    <div class="mm-tco__card-label">Ежемесячный платёж</div>
+    <div class="mm-tco__total">{{ result.monthly_payment|floatformat:"0g" }} ₽</div>
+    <div class="mm-tco__card-note">
+      {{ form.cleaned_data.months }} мес · аванс {{ form.cleaned_data.advance_percent }}%
+    </div>
+  </div>
+
+  <div class="mm-tco__breakdown">
+    <div class="mm-tco__breakdown-title">Структура сделки</div>
+    <dl class="mm-tco__rows">
+      <div class="mm-tco__row">
+        <dt>Стоимость техники</dt><dd>{{ result.price|floatformat:"0g" }} ₽</dd>
+      </div>
+      <div class="mm-tco__row">
+        <dt>Первоначальный взнос</dt><dd>{{ result.advance|floatformat:"0g" }} ₽</dd>
+      </div>
+      <div class="mm-tco__row">
+        <dt>Финансируется</dt><dd>{{ result.financed|floatformat:"0g" }} ₽</dd>
+      </div>
+      <div class="mm-tco__row">
+        <dt>Переплата за срок</dt><dd>{{ result.overpayment|floatformat:"0g" }} ₽</dd>
+      </div>
+      <div class="mm-tco__row mm-tco__row--total">
+        <dt>Итого</dt><dd>{{ result.total|floatformat:"0g" }} ₽</dd>
+      </div>
+    </dl>
+  </div>
+
+  {% if lead_saved %}
+    <div class="mm-form__success">
+      Заявка принята — менеджер подберёт программу и свяжется с вами.
+    </div>
+  {% endif %}
+
+  <a class="mm-btn mm-btn--dark mm-btn--block" href="{% url 'catalog:machine-list' %}">
+    Подобрать технику в каталоге
+  </a>
+
+  <p class="mm-tco__disclaimer">
+    Удорожание указано в процентах за год и считается от финансируемой суммы.
+    Точный график платежей составляет лизинговая компания после рассмотрения
+    заявки.
+  </p>
+{% elif form.errors %}
+  <div class="mm-tco__placeholder">
+    <div class="mm-tco__placeholder-icon" aria-hidden="true">!</div>
+    <p>Проверьте введённые значения — расчёт не получился.</p>
+  </div>
+{% else %}
+  <div class="mm-tco__placeholder">
+    <div class="mm-tco__placeholder-icon" aria-hidden="true">₽</div>
+    <p>Заполните условия слева, и здесь появится размер ежемесячного платежа.</p>
+  </div>
+{% endif %}

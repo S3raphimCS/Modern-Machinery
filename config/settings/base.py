@@ -51,6 +51,7 @@ LOCAL_APPS = [
     "apps.services",
     "apps.content",
     "apps.leads",
+    "apps.financing",
     "apps.seo",
     "apps.imports",
 ]
@@ -181,6 +182,16 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Файлы, приложенные к заявкам, лежат вне media: media раздаёт nginx
+# напрямую, и документ клиента открывался бы по угаданной ссылке. Отсюда
+# их отдаёт только представление с проверкой прав сотрудника.
+PRIVATE_MEDIA_ROOT = env.path("PRIVATE_MEDIA_ROOT", default=BASE_DIR / "private_media")
+
+# Внутренний путь nginx для отдачи защищённых файлов через X-Accel-Redirect:
+# Django проверяет права и передаёт отдачу nginx, не тратя рабочий процесс.
+# Пусто — файл отдаёт сам Django (разработка, где nginx нет).
+PRIVATE_MEDIA_INTERNAL_URL = env("PRIVATE_MEDIA_INTERNAL_URL", default="")
+
 USE_S3 = env.bool("USE_S3", default=False)
 
 if USE_S3:
@@ -237,6 +248,10 @@ LEAD_THROTTLE_BURST_RATE = env("LEAD_THROTTLE_BURST_RATE", default="3/min")
 LEAD_MIN_FORM_SECONDS = env.int("LEAD_MIN_FORM_SECONDS", default=3)
 LEAD_DEDUPE_WINDOW_SECONDS = env.int("LEAD_DEDUPE_WINDOW_SECONDS", default=300)
 LEAD_RETENTION_DAYS = env.int("LEAD_RETENTION_DAYS", default=365)
+# Предел суммарного размера вложений в письме. Всё, что крупнее, почтовые
+# серверы отклоняют, и не дойдёт всё письмо вместе с самой заявкой — такие
+# файлы менеджер открывает по ссылке в админке.
+LEAD_EMAIL_ATTACHMENT_LIMIT = env.int("LEAD_EMAIL_ATTACHMENT_LIMIT", default=10 * 1024 * 1024)
 
 # --- Каталог --------------------------------------------------------------
 

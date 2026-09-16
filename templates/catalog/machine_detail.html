@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load l10n %}
+{% load financing l10n %}
 {% block title %}{{ machine.seo_title|default:machine.full_name }}{% endblock %}
 {% block meta_description %}{{ machine.seo_description|default:machine.short_description }}{% endblock %}
 {% block robots %}{% if machine.is_noindex %}<meta name="robots" content="noindex,nofollow">{% endif %}{% endblock %}
@@ -71,6 +71,15 @@
 
       <div class="mm-product__price">{{ machine.display_price }}</div>
       {% if machine.price_note %}<div class="mm-product__price-note">{{ machine.price_note }}</div>{% endif %}
+      {% if not machine.is_price_on_request and machine.price %}
+        {% leasing_monthly machine.price as monthly %}
+        {% if monthly %}
+          <span class="mm-leasing-hint">
+            или <b>{{ monthly|floatformat:"0g" }} ₽/мес</b> в лизинг —
+            <a href="{% url 'financing:leasing' %}">рассчитать условия</a>
+          </span>
+        {% endif %}
+      {% endif %}
 
       <div class="mm-availability">
         {% for stock in machine.stocks.all %}
@@ -92,6 +101,18 @@
           <div class="mm-availability__row"><span>Гарантия</span><span>{{ machine.warranty_note }}</span></div>
         {% endif %}
       </div>
+
+      {% if delivery_options %}
+        <div class="mm-delivery">
+          <div class="mm-delivery__title">Доставка на объект</div>
+          <ul class="mm-delivery__list">
+            {% for option in delivery_options %}
+              <li>{{ option.name }}{% if option.lead_time %} — {{ option.lead_time }}{% endif %}</li>
+            {% endfor %}
+          </ul>
+          <a class="mm-delivery__link" href="{% url 'company:delivery' %}">Условия доставки →</a>
+        </div>
+      {% endif %}
 
       <a class="mm-btn mm-btn--primary mm-btn--block" href="#"
          hx-get="{% url 'content:lead-form-modal' %}?type=price" hx-target="#mm-modal-root"
@@ -186,6 +207,47 @@
         {% endfor %}
       </div>
       <p style="margin-top:16px;"><a href="{% url 'parts:part-list' %}?machine={{ machine.slug }}">Все запчасти →</a></p>
+    </section>
+  {% endif %}
+
+  {% if reviews %}
+    <section class="mm-section">
+      <h2 class="mm-section__title">Отзывы об этой модели</h2>
+      {% comment %}
+        Здесь микроразметка законна: это отзыв о товаре, а не организации о
+        самой себе. На странице «Отзывы» её нет — там она не даёт звёзд и
+        нарушала бы правила поисковиков.
+      {% endcomment %}
+      <div class="mm-reviews">
+        {% for review in reviews %}
+          <article class="mm-review" itemscope itemtype="https://schema.org/Review">
+            <meta itemprop="itemReviewed" content="{{ machine.full_name }}">
+            <div class="mm-review__rating" itemprop="reviewRating" itemscope
+                 itemtype="https://schema.org/Rating"
+                 aria-label="Оценка {{ review.rating }} из 5">
+              <meta itemprop="ratingValue" content="{{ review.rating }}">
+              <meta itemprop="bestRating" content="5">
+              {% for _ in "12345"|make_list %}
+                <span class="mm-review__star{% if forloop.counter <= review.rating %} is-on{% endif %}">★</span>
+              {% endfor %}
+            </div>
+            <blockquote class="mm-review__text" itemprop="reviewBody">
+              {{ review.text|linebreaks }}
+            </blockquote>
+            <footer class="mm-review__author" itemprop="author" itemscope
+                    itemtype="https://schema.org/Person">
+              <div class="mm-review__name" itemprop="name">{{ review.author_name }}</div>
+              {% if review.signature %}
+                <div class="mm-review__signature">{{ review.signature }}</div>
+              {% endif %}
+              {% if review.published_at %}
+                <meta itemprop="datePublished" content="{{ review.published_at|date:'Y-m-d' }}">
+              {% endif %}
+            </footer>
+          </article>
+        {% endfor %}
+      </div>
+      <p style="margin-top:16px;"><a href="{% url 'content:review-list' %}">Все отзывы →</a></p>
     </section>
   {% endif %}
 

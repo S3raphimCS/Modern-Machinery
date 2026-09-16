@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import datetime
+from pathlib import Path
 
 from django.conf import settings
 from django.db import transaction
@@ -36,8 +37,28 @@ def collect_request_meta(request) -> dict:
     }
 
 
+def attach_files(lead: Lead, files) -> None:
+    """Привязывает загруженные файлы к заявке.
+
+    Исходное имя сохраняется отдельным полем: на диске файл лежит под
+    случайным именем, потому что название приходит от постороннего.
+    """
+    from apps.leads.models import LeadAttachment
+    from apps.leads.validators import MAX_FILES_PER_LEAD
+
+    for uploaded in list(files)[:MAX_FILES_PER_LEAD]:
+        LeadAttachment.objects.create(
+            lead=lead,
+            file=uploaded,
+            original_name=Path(uploaded.name).name[:255],
+            size=uploaded.size,
+        )
+
+
 @transaction.atomic
-def create_lead(*, data: dict, request=None, consent_given: bool = True) -> tuple[Lead, bool]:
+def create_lead(
+    *, data: dict, request=None, consent_given: bool = True, files=None
+) -> tuple[Lead, bool]:
     """Создаёт заявку и запускает её обработку.
 
     Возвращает пару «заявка, создана ли она». Повторная отправка того же
@@ -59,6 +80,11 @@ def create_lead(*, data: dict, request=None, consent_given: bool = True) -> tupl
     if duplicate_id:
         existing = Lead.objects.filter(pk=duplicate_id).first()
         if existing is not None:
+            # Повтор с файлом — обычное поведение: человек отправил заявку,
+            # вспомнил про спецификацию и отправил снова. Молча потерять файл
+            # нельзя, поэтому он прикрепляется к уже созданной заявке.
+            if files:
+                attach_files(existing, files)
             return existing, False
 
     consent = ConsentVersion.current() if consent_given else None
@@ -78,6 +104,9 @@ def create_lead(*, data: dict, request=None, consent_given: bool = True) -> tupl
     if rule is not None:
         lead.department = rule.department
     lead.save()
+
+    if files:
+        attach_files(lead, files)
 
     LeadEvent.objects.create(lead=lead, kind=LeadEvent.Kind.CREATED)
     antispam.remember(fingerprint, lead.pk)

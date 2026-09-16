@@ -84,6 +84,9 @@ class Command(BaseCommand):
         stats["services"] = self._create_services()
         stats["content"] = self._create_content(branch)
         stats["landings"] = self._create_landings()
+        stats["financing"] = self._create_financing()
+        stats["delivery"] = self._create_delivery()
+        stats["reviews"] = self._create_reviews()
         self._create_lead_rules()
 
         run.finish(status=ImportRun.Status.SUCCESS, stats=stats)
@@ -687,8 +690,122 @@ class Command(BaseCommand):
                     "seo_h1": title,
                 },
             )
-        self._say(f"Создано подборок каталога: {len(data.CATALOG_LANDINGS)}.")
-        return len(data.CATALOG_LANDINGS)
+        from apps.catalog.models import CatalogLandingSpec
+        from apps.specs.models import SpecKey
+
+        base = len(data.CATALOG_LANDINGS)
+        for order, row in enumerate(data.RANGE_LANDINGS, start=base + 1):
+            slug, title, type_slug, spec_code, low, high, intro = row
+            spec_key = SpecKey.objects.filter(code=spec_code).first()
+            if spec_key is None:
+                continue
+
+            landing, _ = CatalogLanding.objects.update_or_create(
+                slug=slug,
+                defaults={
+                    "title": title,
+                    "intro": intro,
+                    "machine_type": MachineType.objects.filter(slug=type_slug).first(),
+                    "is_published": True,
+                    "published_at": timezone.now(),
+                    "is_featured": True,
+                    "sort_order": order * 10,
+                    "seo_title": f"{title} — купить в Хабаровске",
+                    "seo_description": intro[:160],
+                    "seo_h1": title,
+                },
+            )
+            CatalogLandingSpec.objects.update_or_create(
+                landing=landing,
+                spec_key=spec_key,
+                defaults={"value_min": low, "value_max": high},
+            )
+
+        total = base + len(data.RANGE_LANDINGS)
+        self._say(f"Создано подборок каталога: {total}.")
+        return total
+
+    def _create_financing(self) -> int:
+        """Партнёры и условия финансирования."""
+        from apps.financing.models import LeasingPartner, LeasingTerms
+
+        terms = LeasingTerms.load()
+        terms.intro = (
+            "Техника окупается годами, платить за неё сразу не обязательно. "
+            "Работаем с лизинговыми компаниями и банками: подбираем программу "
+            "под оборот вашего предприятия и помогаем собрать документы."
+        )
+        terms.save()
+
+        for order, (name, note) in enumerate(data.LEASING_PARTNERS, start=1):
+            LeasingPartner.objects.update_or_create(
+                name=name,
+                defaults={"note": note, "sort_order": order * 10, "is_active": True},
+            )
+        self._say(f"Создано партнёров по финансированию: {len(data.LEASING_PARTNERS)}.")
+        return len(data.LEASING_PARTNERS)
+
+    def _create_delivery(self) -> int:
+        """Способы доставки техники."""
+        from apps.company.models import DeliveryOption
+
+        for order, (name, description, lead_time, note) in enumerate(
+            data.DELIVERY_OPTIONS, start=1
+        ):
+            DeliveryOption.objects.update_or_create(
+                name=name,
+                defaults={
+                    "description": description,
+                    "lead_time": lead_time,
+                    "note": note,
+                    "sort_order": order * 10,
+                    "is_active": True,
+                },
+            )
+        self._say(f"Создано способов доставки: {len(data.DELIVERY_OPTIONS)}.")
+        return len(data.DELIVERY_OPTIONS)
+
+    def _create_reviews(self) -> int:
+        """Отзывы клиентов и рейтинги на площадках."""
+        from apps.content.models import Review, ReviewSource
+
+        for index, row in enumerate(data.REVIEWS):
+            name, position, company, city, rating, text, type_slug = row
+            machine = None
+            if type_slug:
+                machine = (
+                    Machine.objects.filter(machine_type__slug__startswith=type_slug[:8])
+                    .order_by("pk")
+                    .first()
+                )
+            Review.objects.update_or_create(
+                author_name=name,
+                company=company,
+                defaults={
+                    "author_position": position,
+                    "city": city,
+                    "rating": rating,
+                    "text": text,
+                    "machine": machine,
+                    "is_published": True,
+                    "published_at": timezone.now() - timezone.timedelta(days=index * 24 + 5),
+                    "sort_order": index * 10,
+                },
+            )
+
+        for order, (platform, rating, count, url) in enumerate(data.REVIEW_SOURCES, 1):
+            ReviewSource.objects.update_or_create(
+                platform=platform,
+                defaults={
+                    "rating": rating,
+                    "reviews_count": count,
+                    "url": url,
+                    "sort_order": order * 10,
+                    "is_active": True,
+                },
+            )
+        self._say(f"Создано отзывов: {len(data.REVIEWS)}.")
+        return len(data.REVIEWS)
 
     def _create_lead_rules(self) -> None:
         """Правила маршрутизации: заявка должна попасть в свой отдел.
@@ -718,6 +835,7 @@ class Command(BaseCommand):
             ("Подбор техники", "selection", None, "prodazhi-tehniki", 50),
             ("Обратный звонок", "callback", None, "prodazhi-tehniki", 60),
             ("Калькулятор стоимости владения", "tco", None, "prodazhi-tehniki", 60),
+            ("Заявка на лизинг", "leasing", None, "prodazhi-tehniki", 50),
             ("Отклик на вакансию", "vacancy", None, "uchebnyy-centr", 60),
         ]
         for name, lead_type, type_slug, dept_code, priority in rules:

@@ -5,6 +5,8 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from apps.core.fields import URLField
+from apps.leads.storage import attachment_upload_to, private_storage
+from apps.leads.validators import LeadFileValidator
 
 
 class ConsentVersion(models.Model):
@@ -50,6 +52,7 @@ class Lead(models.Model):
         PARTS = "parts", "Запрос запчастей"
         CALLBACK = "callback", "Обратный звонок"
         TCO = "tco", "Калькулятор стоимости владения"
+        LEASING = "leasing", "Заявка на лизинг"
         VACANCY = "vacancy", "Отклик на вакансию"
 
     class Status(models.TextChoices):
@@ -166,6 +169,50 @@ class Lead(models.Model):
         if self.service_id:
             return str(self.service)
         return self.get_type_display()
+
+
+class LeadAttachment(models.Model):
+    """Файл, приложенный к заявке.
+
+    Снабженец присылает спецификацию, техническое задание или список
+    артикулов в Excel. Отдельная модель, а не поле у заявки: файлов бывает
+    несколько, и ограничение на их число живёт в форме, а не в схеме.
+    """
+
+    lead = models.ForeignKey(
+        Lead, verbose_name="Заявка", on_delete=models.CASCADE, related_name="attachments"
+    )
+    file = models.FileField(
+        "Файл",
+        upload_to=attachment_upload_to,
+        storage=private_storage,
+        validators=[LeadFileValidator()],
+    )
+    # Имя, под которым файл прислал посетитель. На диске не используется:
+    # оно от постороннего и может содержать что угодно.
+    original_name = models.CharField("Исходное имя", max_length=255)
+    size = models.PositiveIntegerField("Размер, байт", default=0)
+    created_at = models.DateTimeField("Загружен", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Вложение"
+        verbose_name_plural = "Вложения"
+        ordering = ["id"]
+
+    def __str__(self) -> str:
+        return self.original_name
+
+    # Файл с диска удаляет сигнал post_delete: он срабатывает и при удалении
+    # заявки целиком, когда метод самого объекта Django не вызывает.
+
+    @property
+    def display_size(self) -> str:
+        """Размер в удобочитаемом виде."""
+        if self.size < 1024:
+            return f"{self.size} Б"
+        if self.size < 1024 * 1024:
+            return f"{self.size / 1024:.0f} КБ"
+        return f"{self.size / 1024 / 1024:.1f} МБ"
 
 
 class LeadEvent(models.Model):

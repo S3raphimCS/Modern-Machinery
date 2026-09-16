@@ -237,3 +237,4 @@ Design.zip
 # В репозиторий попадают только образцы.
 secrets/*
 !secrets/*.example
+private_media/

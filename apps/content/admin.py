@@ -4,7 +4,17 @@ from django.contrib import admin
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
-from .models import MenuItem, NewsCategory, NewsPost, Page, PageBlock, SiteSettings, Vacancy
+from .models import (
+    MenuItem,
+    NewsCategory,
+    NewsPost,
+    Page,
+    PageBlock,
+    Review,
+    ReviewSource,
+    SiteSettings,
+    Vacancy,
+)
 
 
 class PageBlockInline(admin.TabularInline):
@@ -38,6 +48,71 @@ class NewsPostAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     filter_horizontal = ["categories", "machines"]
     date_hierarchy = "published_at"
+
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = [
+        "author_name",
+        "company",
+        "rating",
+        "machine",
+        "service",
+        "published_at",
+        "is_published",
+    ]
+    list_filter = ["is_published", "rating", "machine__brand"]
+    list_editable = ["is_published"]
+    search_fields = ["author_name", "company", "text"]
+    autocomplete_fields = ["machine", "service"]
+    date_hierarchy = "published_at"
+    fieldsets = [
+        (
+            "Автор",
+            {
+                "fields": ["author_name", "author_position", "company", "city"],
+                "description": "Отзыв вносит менеджер со слов клиента и с его "
+                "разрешения. Публичной формы нет: она принесла бы "
+                "спам и чужие персональные данные.",
+            },
+        ),
+        ("Отзыв", {"fields": ["rating", "text", "source_note"]}),
+        (
+            "Привязка",
+            {
+                "fields": ["machine", "service"],
+                "description": "Привязанный к технике отзыв показывается на её "
+                "карточке — и только там получает микроразметку.",
+            },
+        ),
+        ("Публикация", {"fields": ["is_published", "published_at", "sort_order"]}),
+    ]
+
+
+@admin.register(ReviewSource)
+class ReviewSourceAdmin(admin.ModelAdmin):
+    list_display = ["platform", "rating", "reviews_count", "updated_at", "is_active"]
+    list_editable = ["rating", "reviews_count", "is_active"]
+    fieldsets = [
+        (
+            None,
+            {
+                "fields": ["platform", "rating", "reviews_count", "url", "is_active", "sort_order"],
+                "description": "Цифры обновляются вручную: 2ГИС и Google не отдают "
+                "отзывы через публичный API. Меняется такое раз в "
+                "квартал.",
+            },
+        ),
+        (
+            "Виджет Яндекса",
+            {
+                "fields": ["widget_code"],
+                "description": "Код виджета из Яндекс Карт: он сам подтягивает "
+                "отзывы и обновляет их каждые 72 часа.",
+                "classes": ["collapse"],
+            },
+        ),
+    ]
 
 
 @admin.register(Vacancy)

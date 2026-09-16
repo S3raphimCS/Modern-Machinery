@@ -10,6 +10,7 @@ from apps.specs.models import MachineSpec
 from .models import (
     Brand,
     CatalogLanding,
+    CatalogLandingSpec,
     Category,
     Machine,
     MachineDocument,
@@ -43,8 +44,17 @@ class BrandAdmin(admin.ModelAdmin):
         return obj.machines.count()
 
 
+class CatalogLandingSpecInline(admin.TabularInline):
+    model = CatalogLandingSpec
+    extra = 1
+    autocomplete_fields = ["spec_key"]
+    verbose_name = "условие по характеристике"
+    verbose_name_plural = "Условия по характеристикам"
+
+
 @admin.register(CatalogLanding)
 class CatalogLandingAdmin(admin.ModelAdmin):
+    inlines = [CatalogLandingSpecInline]
     list_display = [
         "title",
         "slug",

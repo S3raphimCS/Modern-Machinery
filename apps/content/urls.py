@@ -10,6 +10,7 @@ urlpatterns = [
     path("o-kompanii/", views.AboutView.as_view(), name="about"),
     path("novosti/", views.NewsListView.as_view(), name="news-list"),
     path("novosti/<slug:slug>/", views.NewsDetailView.as_view(), name="news-detail"),
+    path("otzyvy/", views.ReviewListView.as_view(), name="review-list"),
     path("vakansii/", views.VacancyListView.as_view(), name="vacancy-list"),
     path("vakansii/<slug:slug>/", views.VacancyDetailView.as_view(), name="vacancy-detail"),
     path("kalkulyator/", views.tco_calculator, name="tco"),

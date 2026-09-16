@@ -121,3 +121,157 @@ def test_search_results_are_not_indexed(client, machine):
 def test_landing_str_and_url(landing):
     assert str(landing) == "Экскаваторы Komatsu в Хабаровске"
     assert landing.get_absolute_url() == "/katalog/ekskavatory-komatsu-habarovsk/"
+
+
+@pytest.fixture
+def weight_key(spec_group):
+    from apps.specs.factories import SpecKeyFactory
+    from apps.specs.models import SpecKey
+
+    return SpecKeyFactory(
+        code="operating_weight",
+        name="Эксплуатационная масса",
+        group=spec_group,
+        unit="кг",
+        value_type=SpecKey.ValueType.NUMBER,
+        is_filterable=True,
+    )
+
+
+def make_range_landing(machine_type, weight_key, low=20000, high=25000):
+    from apps.catalog.models import CatalogLandingSpec
+
+    landing = CatalogLanding.objects.create(
+        slug="ekskavatory-20-25-tonn",
+        title="Экскаваторы 20–25 тонн",
+        machine_type=machine_type,
+        is_published=True,
+    )
+    CatalogLandingSpec.objects.create(
+        landing=landing, spec_key=weight_key, value_min=low, value_max=high
+    )
+    return landing
+
+
+def machine_with_weight(brand, machine_type, weight_key, slug, weight):
+    from apps.specs.models import MachineSpec
+
+    machine = MachineFactory(slug=slug, brand=brand, machine_type=machine_type)
+    MachineSpec.objects.create(machine=machine, spec_key=weight_key, value_num=weight)
+    return machine
+
+
+def test_range_landing_filters_by_specification(client, brand, machine_type, weight_key):
+    """Страница под запрос «экскаватор 20 тонн» отбирает технику по массе."""
+    machine_with_weight(brand, machine_type, weight_key, "light", 15000)
+    machine_with_weight(brand, machine_type, weight_key, "match", 22000)
+    machine_with_weight(brand, machine_type, weight_key, "heavy", 30000)
+
+    landing = make_range_landing(machine_type, weight_key)
+    response = client.get(landing.get_absolute_url())
+
+    assert response.context["total"] == 1
+
+
+def test_open_ended_range_works(client, brand, machine_type, weight_key):
+    """Подборка «от 30 тонн» задаётся только нижней границей."""
+    machine_with_weight(brand, machine_type, weight_key, "light", 15000)
+    machine_with_weight(brand, machine_type, weight_key, "heavy", 35000)
+
+    landing = make_range_landing(machine_type, weight_key, low=30000, high=None)
+
+    assert client.get(landing.get_absolute_url()).context["total"] == 1
+
+
+def test_range_landing_stays_indexable(client, brand, machine_type, weight_key):
+    """Диапазон — условие самой подборки, а не посторонний фильтр.
+
+    Без учёта диапазонов в подсчёте условий такая страница считалась бы
+    отфильтрованной и уходила в noindex — то есть в поиск бы не попала.
+    """
+    machine_with_weight(brand, machine_type, weight_key, "match", 22000)
+    landing = make_range_landing(machine_type, weight_key)
+
+    content = client.get(landing.get_absolute_url()).content.decode()
+
+    assert "noindex" not in content
+    assert f'<link rel="canonical" href="http://testserver{landing.get_absolute_url()}">' in content
+
+
+def test_extra_filter_on_range_landing_is_not_indexed(client, brand, machine_type, weight_key):
+    machine_with_weight(brand, machine_type, weight_key, "match", 22000)
+    landing = make_range_landing(machine_type, weight_key)
+
+    content = client.get(landing.get_absolute_url(), {"in_stock": "1"}).content.decode()
+
+    assert 'content="noindex,follow"' in content
+
+
+def test_landing_range_wins_over_query_params(client, brand, machine_type, weight_key):
+    """Подменить диапазон через адрес нельзя: страница обязана быть стабильной."""
+    machine_with_weight(brand, machine_type, weight_key, "light", 15000)
+    machine_with_weight(brand, machine_type, weight_key, "match", 22000)
+    landing = make_range_landing(machine_type, weight_key)
+
+    response = client.get(landing.get_absolute_url(), {"spec_operating_weight_min": "10000"})
+
+    assert response.context["total"] == 1
+
+
+def test_condition_requires_at_least_one_bound(machine_type, weight_key):
+    from django.db import IntegrityError, transaction
+
+    from apps.catalog.models import CatalogLandingSpec
+
+    landing = CatalogLanding.objects.create(
+        slug="bez-granic", title="Без границ", machine_type=machine_type, is_published=True
+    )
+
+    with pytest.raises(IntegrityError), transaction.atomic():
+        CatalogLandingSpec.objects.create(landing=landing, spec_key=weight_key)
+
+
+def test_reversed_bounds_rejected(machine_type, weight_key):
+    from django.db import IntegrityError, transaction
+
+    from apps.catalog.models import CatalogLandingSpec
+
+    landing = CatalogLanding.objects.create(
+        slug="perevernutyy",
+        title="Перевёрнутый",
+        machine_type=machine_type,
+        is_published=True,
+    )
+
+    with pytest.raises(IntegrityError), transaction.atomic():
+        CatalogLandingSpec.objects.create(
+            landing=landing, spec_key=weight_key, value_min=30000, value_max=10000
+        )
+
+
+def test_one_condition_per_parameter(machine_type, weight_key):
+    from django.db import IntegrityError, transaction
+
+    from apps.catalog.models import CatalogLandingSpec
+
+    landing = make_range_landing(machine_type, weight_key)
+
+    with pytest.raises(IntegrityError), transaction.atomic():
+        CatalogLandingSpec.objects.create(
+            landing=landing, spec_key=weight_key, value_min=1, value_max=2
+        )
+
+
+def test_condition_str_covers_all_shapes(machine_type, weight_key):
+    from apps.catalog.models import CatalogLandingSpec
+
+    landing = CatalogLanding.objects.create(
+        slug="vidy", title="Виды", machine_type=machine_type, is_published=True
+    )
+    both = CatalogLandingSpec(landing=landing, spec_key=weight_key, value_min=1, value_max=2)
+    only_low = CatalogLandingSpec(landing=landing, spec_key=weight_key, value_min=1)
+    only_high = CatalogLandingSpec(landing=landing, spec_key=weight_key, value_max=2)
+
+    assert "1–2" in str(both)
+    assert str(only_low).endswith("от 1")
+    assert str(only_high).endswith("до 2")

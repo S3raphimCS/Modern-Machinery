@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from .models import Branch, ContactPoint, Department, Employee
+from .models import Branch, ContactPoint, DeliveryOption, Department, Employee
 
 
 class BranchContactInline(admin.TabularInline):
@@ -38,6 +38,14 @@ class BranchAdmin(admin.ModelAdmin):
             },
         ),
     ]
+
+
+@admin.register(DeliveryOption)
+class DeliveryOptionAdmin(admin.ModelAdmin):
+    list_display = ["name", "lead_time", "note", "is_active", "sort_order"]
+    list_filter = ["is_active"]
+    list_editable = ["is_active", "sort_order"]
+    search_fields = ["name", "description"]
 
 
 @admin.register(Department)
