@@ -280,3 +280,37 @@ def test_executable_logo_is_rejected():
         source.save()
 
     assert "logo" in excinfo.value.message_dict
+
+
+def test_star_row_is_filled_to_the_fraction_of_the_rating(client, branch):
+    """Под оценкой идёт ряд из пяти звёзд, залитый по её доле.
+
+    Округление до целой звезды скрыло бы разницу между 4,4 и 4,6 —
+    а это единственное, чем площадки на странице и отличаются.
+    """
+    ReviewSource.objects.create(
+        platform=ReviewSource.Platform.GIS,
+        rating=Decimal("4.4"),
+        reviews_count=17,
+        url="https://2gis.ru/khabarovsk/firm/1",
+    )
+
+    body = client.get(reverse("content:review-list")).content.decode()
+
+    assert body.count("★★★★★") == 2, "нужны два ряда: серый и закрашенный поверх"
+    assert 'style="width: 88%"' in body
+
+
+def test_rating_is_announced_for_screen_readers(client, branch):
+    """Звёзды от чтения вслух скрыты, поэтому оценка идёт подписью ссылки."""
+    ReviewSource.objects.create(
+        platform=ReviewSource.Platform.GIS,
+        rating=Decimal("4.4"),
+        reviews_count=17,
+        url="https://2gis.ru/khabarovsk/firm/1",
+    )
+
+    body = client.get(reverse("content:review-list")).content.decode()
+
+    assert 'aria-hidden="true"' in body
+    assert 'aria-label="2ГИС: оценка 4.4 из 5, 17 оценок"' in body

@@ -600,14 +600,19 @@ textarea.mm-input { min-height: 96px; resize: vertical; }
   letter-spacing: .4px; color: var(--mm-source-accent, var(--mm-ink));
 }
 
-.mm-sources__score { display: flex; align-items: center; gap: 12px; }
+.mm-sources__score { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .mm-sources__rating {
   font-family: var(--mm-font-display); font-weight: 800; font-size: 44px;
   line-height: 1; color: var(--mm-ink);
 }
+.mm-sources__rating-max { font-size: 18px; font-weight: 700; color: var(--mm-muted); }
 /* Закрашенный ряд лежит поверх серого и обрезается по ширине — так дробная
-   оценка показывается без полузвёзд отдельными файлами. */
-.mm-sources__stars { position: relative; display: inline-block; font-size: 17px; letter-spacing: 2px; }
+   оценка показывается без полузвёзд отдельными файлами. Межбуквенный интервал
+   идёт и после последней звезды, поэтому доля ширины совпадает с долей оценки. */
+.mm-sources__stars {
+  position: relative; display: inline-block; line-height: 1;
+  font-size: 22px; letter-spacing: 3px;
+}
 .mm-sources__stars-bg { color: var(--mm-border); }
 .mm-sources__stars-fill {
   position: absolute; inset: 0 auto 0 0; overflow: hidden;

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load l10n %}
+{% load humanize_ru l10n %}
 
 {% block title %}Отзывы клиентов — Модерн Машинери Хабаровск{% endblock %}
 {% block meta_description %}Что говорят о работе филиала в Хабаровске: отзывы предприятий о поставке техники, запчастях и сервисном обслуживании.{% endblock %}
@@ -30,8 +30,10 @@
       <h2 class="mm-section__title">Оценки на площадках</h2>
       <div class="mm-sources">
         {% for source in sources %}
+          {# Ряд звёзд скрыт от чтения вслух, поэтому оценка проговаривается здесь. #}
           <a class="mm-sources__item" href="{{ source.url }}" data-platform="{{ source.platform }}"
-             target="_blank" rel="noopener nofollow">
+             target="_blank" rel="noopener nofollow"
+             aria-label="{{ source.get_platform_display }}: оценка {{ source.rating|unlocalize }} из 5, {{ source.reviews_count }} {{ source.reviews_count|plural_ru:"оценка,оценки,оценок" }}">
             <div class="mm-sources__head">
               {% if source.logo %}
                 <img class="mm-sources__logo" src="{{ source.logo.url }}" alt=""
@@ -42,7 +44,8 @@
             </div>
 
             <div class="mm-sources__score">
-              <span class="mm-sources__rating">{{ source.rating|unlocalize }}</span>
+              <span class="mm-sources__rating">{{ source.rating|unlocalize }}<span
+                class="mm-sources__rating-max">&thinsp;/&thinsp;5</span></span>
               {# Дробная оценка показывается обрезкой закрашенного ряда по ширине. #}
               <span class="mm-sources__stars" aria-hidden="true">
                 <span class="mm-sources__stars-bg">★★★★★</span>
@@ -51,7 +54,7 @@
             </div>
 
             <div class="mm-sources__count">
-              {{ source.reviews_count }} {{ source.reviews_count|pluralize:"оценка,оценки,оценок" }}
+              {{ source.reviews_count }} {{ source.reviews_count|plural_ru:"оценка,оценки,оценок" }}
               на площадке «{{ source.get_platform_display }}»
             </div>
             <span class="mm-sources__link">Читать отзывы</span>
