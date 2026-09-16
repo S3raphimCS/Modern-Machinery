@@ -152,6 +152,14 @@ prod-down:  ## Остановить production-профиль
 prod-logs:  ## Смотреть логи production
 	$(COMPOSE_PROD) logs -f web worker nginx
 
+.PHONY: prod-seed
+prod-seed:  ## Наполнить боевую базу демонстрационными данными
+	$(COMPOSE_PROD) exec -T web python manage.py seed_demo
+
+.PHONY: prod-shell
+prod-shell:  ## Django-консоль в боевом контейнере
+	$(COMPOSE_PROD) exec web python manage.py shell
+
 # --- TLS -------------------------------------------------------------------
 
 .PHONY: tls-issue
