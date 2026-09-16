@@ -53,13 +53,11 @@
             hx-target="#mm-leasing-result" hx-swap="innerHTML">
         {% csrf_token %}
 
-        {#
-          Пересчёт идёт по ходу ввода: запрос уходит через 400 мс после того,
+        {% comment %}Пересчёт идёт по ходу ввода: запрос уходит через 400 мс после того,
           как поле перестали менять. Помечен `action=calc`, иначе набор
           телефона в соседнем блоке создавал бы заявку на каждой цифре.
           Отправка формы кнопкой этот блок не затрагивает и работает как
-          раньше — в том числе без JavaScript.
-        #}
+          раньше — в том числе без JavaScript.{% endcomment %}
         <fieldset class="mm-tco__group"
                   hx-post="{% url 'financing:leasing' %}"
                   hx-trigger="input changed delay:400ms"
@@ -107,8 +105,8 @@
           </div>
         </fieldset>
 
-        {# Считает страница сама; кнопка нужна, чтобы отправить расчёт менеджеру
-           — и чтобы калькулятор работал без JavaScript. #}
+        {% comment %}Считает страница сама; кнопка нужна, чтобы отправить расчёт менеджеру
+           — и чтобы калькулятор работал без JavaScript.{% endcomment %}
         <button class="mm-btn mm-btn--primary mm-btn--block" type="submit">
           Отправить расчёт менеджеру <span class="mm-htmx-indicator">…</span>
         </button>
