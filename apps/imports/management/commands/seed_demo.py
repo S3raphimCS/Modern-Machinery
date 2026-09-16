@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import random
 from decimal import Decimal
+from pathlib import Path
 
+from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
@@ -32,6 +34,10 @@ from apps.leads.models import ConsentVersion, LeadRoutingRule
 from apps.parts.models import Part, PartApplicability, PartCategory, PartStock
 from apps.services.models import Service, ServiceCategory
 from apps.specs.models import MachineSpec, SpecGroup, SpecKey, SpecOption
+
+# Логотипы площадок лежат рядом с кодом: они часть демонстрационных данных,
+# а не пользовательский контент.
+LOGO_DIR = Path(__file__).resolve().parents[2] / "assets" / "review-sources"
 
 
 class Command(BaseCommand):
@@ -794,7 +800,7 @@ class Command(BaseCommand):
             )
 
         for order, (platform, rating, count, url) in enumerate(data.REVIEW_SOURCES, 1):
-            ReviewSource.objects.update_or_create(
+            source, _ = ReviewSource.objects.update_or_create(
                 platform=platform,
                 defaults={
                     "rating": rating,
@@ -804,8 +810,26 @@ class Command(BaseCommand):
                     "is_active": True,
                 },
             )
+            self._attach_source_logo(source)
         self._say(f"Создано отзывов: {len(data.REVIEWS)}.")
         return len(data.REVIEWS)
+
+    def _attach_source_logo(self, source) -> None:
+        """Кладёт логотип площадки, если его ещё нет.
+
+        Повторный запуск команды файл не трогает: хранилище приписало бы к
+        имени случайный суффикс, и копии накапливались бы при каждом запуске.
+        Загруженный через админку логотип тоже остаётся на месте.
+        """
+        if source.logo:
+            return
+
+        path = LOGO_DIR / f"{source.platform}.svg"
+        if not path.exists():
+            return
+
+        with path.open("rb") as handle:
+            source.logo.save(path.name, File(handle), save=True)
 
     def _create_lead_rules(self) -> None:
         """Правила маршрутизации: заявка должна попасть в свой отдел.

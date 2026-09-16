@@ -224,3 +224,59 @@ def test_widget_belongs_to_yandex_only():
         source.save()
 
     assert "widget_code" in excinfo.value.message_dict
+
+
+def test_rating_is_shown_as_a_share_of_five_stars():
+    """Ряд звёзд закрашивается по ширине, поэтому шаблону нужна доля."""
+    source = ReviewSource(platform=ReviewSource.Platform.GIS, rating=Decimal("4.4"))
+
+    assert source.rating_percent == 88
+
+
+def test_platform_name_stands_in_for_a_missing_logo(client, branch):
+    """Логотипы загружает клиент. Пока их нет, карточка не должна пустовать."""
+    ReviewSource.objects.create(
+        platform=ReviewSource.Platform.GIS,
+        rating=Decimal("4.4"),
+        reviews_count=17,
+        url="https://2gis.ru/khabarovsk/firm/1",
+    )
+
+    body = client.get(reverse("content:review-list")).content.decode()
+
+    assert "mm-sources__wordmark" in body
+    assert "2ГИС" in body
+
+
+def test_logo_replaces_the_name_when_uploaded(client, branch):
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    source = ReviewSource.objects.create(
+        platform=ReviewSource.Platform.GIS,
+        rating=Decimal("4.4"),
+        reviews_count=17,
+        url="https://2gis.ru/khabarovsk/firm/1",
+    )
+    source.logo.save("2gis.png", SimpleUploadedFile("2gis.png", b"\x89PNG\r\n\x1a\n"), save=True)
+
+    body = client.get(reverse("content:review-list")).content.decode()
+
+    assert "mm-sources__logo" in body
+    assert "mm-sources__wordmark" not in body
+
+
+def test_executable_logo_is_rejected():
+    """Загрузка идёт в общедоступную папку, откуда файл отдаётся как есть."""
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    source = ReviewSource(
+        platform=ReviewSource.Platform.GIS,
+        rating=Decimal("4.4"),
+        url="https://2gis.ru/khabarovsk/firm/1",
+        logo=SimpleUploadedFile("logo.html", b"<script>alert(1)</script>"),
+    )
+
+    with pytest.raises(ValidationError) as excinfo:
+        source.save()
+
+    assert "logo" in excinfo.value.message_dict

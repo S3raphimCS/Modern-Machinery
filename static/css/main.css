@@ -563,25 +563,63 @@ textarea.mm-input { min-height: 96px; resize: vertical; }
 
 /* --- Отзывы --------------------------------------------------------------- */
 
-.mm-sources { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+/*
+ * Карточки внешних площадок. Их две, поэтому колонки задаются auto-fit по
+ * минимальной ширине: на узкой оболочке они встают друг под друга сами, без
+ * отдельного правила, а на широкой не растягиваются в полосу на весь экран.
+ */
+.mm-sources {
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  max-width: 720px;
+}
 .mm-sources__item {
-  border: 1px solid var(--mm-border); padding: 18px; text-align: center;
-  color: var(--mm-ink);
+  position: relative; overflow: hidden;
+  border: 1px solid var(--mm-border); background: var(--mm-bg);
+  padding: 26px 24px 22px; color: var(--mm-ink);
+  display: flex; flex-direction: column; gap: 14px;
   transition: border-color .18s ease, transform .18s ease, box-shadow .2s ease;
+}
+/* Полоса в цвете площадки: единственное место, где он появляется. */
+.mm-sources__item::before {
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 4px;
+  background: var(--mm-source-accent, var(--mm-border-strong));
 }
 .mm-sources__item:hover {
   border-color: var(--mm-ink); color: var(--mm-ink);
-  transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15, 17, 20, .08);
+  transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15, 17, 20, .1);
 }
-.mm-sources__platform {
-  font-family: var(--mm-font-display); font-size: 12px; font-weight: 600;
-  letter-spacing: 1px; text-transform: uppercase; color: var(--mm-muted);
+.mm-sources__item[data-platform="2gis"] { --mm-source-accent: #299400; }
+.mm-sources__item[data-platform="yandex"] { --mm-source-accent: #FC3F1D; }
+
+.mm-sources__head { display: flex; align-items: center; min-height: 40px; }
+.mm-sources__logo { max-height: 40px; width: auto; max-width: 100%; object-fit: contain; }
+/* Запасной вариант, пока логотип не загружен. */
+.mm-sources__wordmark {
+  font-family: var(--mm-font-display); font-size: 20px; font-weight: 800;
+  letter-spacing: .4px; color: var(--mm-source-accent, var(--mm-ink));
 }
+
+.mm-sources__score { display: flex; align-items: center; gap: 12px; }
 .mm-sources__rating {
-  font-family: var(--mm-font-display); font-weight: 800; font-size: 32px;
-  color: var(--mm-ink); margin: 6px 0 2px;
+  font-family: var(--mm-font-display); font-weight: 800; font-size: 44px;
+  line-height: 1; color: var(--mm-ink);
 }
-.mm-sources__count { font-size: 13px; color: var(--mm-muted); }
+/* Закрашенный ряд лежит поверх серого и обрезается по ширине — так дробная
+   оценка показывается без полузвёзд отдельными файлами. */
+.mm-sources__stars { position: relative; display: inline-block; font-size: 17px; letter-spacing: 2px; }
+.mm-sources__stars-bg { color: var(--mm-border); }
+.mm-sources__stars-fill {
+  position: absolute; inset: 0 auto 0 0; overflow: hidden;
+  white-space: nowrap; color: var(--mm-red);
+}
+.mm-sources__count { font-size: 13px; color: var(--mm-muted); margin-top: auto; }
+.mm-sources__link {
+  font-family: var(--mm-font-display); font-size: 12px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase; color: var(--mm-red);
+}
+.mm-sources__link::after { content: " →"; }
+.mm-sources__item:hover .mm-sources__link { color: var(--mm-red-dark); }
 
 .mm-reviews { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
 .mm-review {
@@ -908,7 +946,6 @@ textarea.mm-input { min-height: 96px; resize: vertical; }
   .mm-hero__actions .mm-btn { width: 100%; }
   .mm-tco__form { padding: 18px 16px; }
   .mm-footer__cols { grid-template-columns: 1fr; }
-  .mm-sources { grid-template-columns: 1fr; }
   /* Нижняя панель навигации из мобильной версии макета. */
   .mm-tabbar {
     display: grid; grid-template-columns: repeat(4, 1fr);

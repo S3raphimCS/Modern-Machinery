@@ -30,11 +30,31 @@
       <h2 class="mm-section__title">Оценки на площадках</h2>
       <div class="mm-sources">
         {% for source in sources %}
-          <a class="mm-sources__item" href="{{ source.url }}"
+          <a class="mm-sources__item" href="{{ source.url }}" data-platform="{{ source.platform }}"
              target="_blank" rel="noopener nofollow">
-            <div class="mm-sources__platform">{{ source.get_platform_display }}</div>
-            <div class="mm-sources__rating">{{ source.rating|unlocalize }}</div>
-            <div class="mm-sources__count">{{ source.reviews_count }} оценок</div>
+            <div class="mm-sources__head">
+              {% if source.logo %}
+                <img class="mm-sources__logo" src="{{ source.logo.url }}" alt=""
+                     width="120" height="40" loading="lazy">
+              {% else %}
+                <span class="mm-sources__wordmark">{{ source.get_platform_display }}</span>
+              {% endif %}
+            </div>
+
+            <div class="mm-sources__score">
+              <span class="mm-sources__rating">{{ source.rating|unlocalize }}</span>
+              {# Дробная оценка показывается обрезкой закрашенного ряда по ширине. #}
+              <span class="mm-sources__stars" aria-hidden="true">
+                <span class="mm-sources__stars-bg">★★★★★</span>
+                <span class="mm-sources__stars-fill" style="width: {{ source.rating_percent }}%">★★★★★</span>
+              </span>
+            </div>
+
+            <div class="mm-sources__count">
+              {{ source.reviews_count }} {{ source.reviews_count|pluralize:"оценка,оценки,оценок" }}
+              на площадке «{{ source.get_platform_display }}»
+            </div>
+            <span class="mm-sources__link">Читать отзывы</span>
           </a>
         {% endfor %}
       </div>

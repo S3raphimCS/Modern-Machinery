@@ -1,6 +1,7 @@
 """Контентные сущности: страницы, новости, вакансии, меню, настройки сайта."""
 
 from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.urls import reverse
 from treebeard.mp_tree import MP_Node
@@ -213,6 +214,14 @@ class ReviewSource(SortableMixin):
     rating = models.DecimalField("Рейтинг", max_digits=2, decimal_places=1)
     reviews_count = models.PositiveIntegerField("Число оценок", default=0)
     url = models.URLField("Ссылка на карточку")
+    logo = models.FileField(
+        "Логотип площадки",
+        upload_to="review-sources/",
+        blank=True,
+        validators=[FileExtensionValidator(["svg", "png", "webp"])],
+        help_text="Официальный логотип с сайта площадки, SVG или PNG. "
+        "Если не загружен, показывается название текстом.",
+    )
     widget_code = models.TextField(
         "Код виджета",
         blank=True,
@@ -235,6 +244,15 @@ class ReviewSource(SortableMixin):
 
     def __str__(self) -> str:
         return f"{self.get_platform_display()}: {self.rating}"
+
+    @property
+    def rating_percent(self) -> int:
+        """Доля закрашенных звёзд, в процентах от ширины строки.
+
+        Половинки звёзд рисуются обрезкой закрашенного ряда по ширине,
+        поэтому шаблону нужна именно доля, а не число звёзд.
+        """
+        return round(self.rating / 5 * 100)
 
     def save(self, *args, **kwargs):
         self.full_clean()

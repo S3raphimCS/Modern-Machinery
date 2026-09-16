@@ -5,7 +5,7 @@ from django.core.management import call_command
 
 from apps.catalog.models import Brand, Machine, MachineStock
 from apps.company.models import Branch, Department, Employee
-from apps.content.models import NewsPost, SiteSettings, Vacancy
+from apps.content.models import NewsPost, ReviewSource, SiteSettings, Vacancy
 from apps.imports.models import ImportRun, SourcePage
 from apps.leads.models import ConsentVersion, LeadRoutingRule
 from apps.parts.models import Part
@@ -145,3 +145,28 @@ def test_seed_image_is_not_duplicated(brand, machine_type):
     Command()._create_machine_image(machine)
 
     assert machine.images.count() == 1
+
+
+def test_seeding_attaches_platform_logos():
+    """Карточки площадок должны сразу показывать логотип, а не название."""
+    call_command("seed_demo", verbosity=0)
+
+    logos = {s.platform: s.logo.name for s in ReviewSource.objects.all()}
+
+    assert logos, "площадки с отзывами должны создаваться"
+    assert all(logos.values()), f"логотип подставлен не везде: {logos}"
+
+
+def test_seeding_twice_keeps_one_logo():
+    """Повторный запуск не должен копить копии логотипа в хранилище.
+
+    Хранилище приписывает к занятому имени случайный суффикс, поэтому
+    безусловное сохранение оставляло бы при каждом запуске новый файл.
+    """
+    call_command("seed_demo", verbosity=0)
+    first = {s.platform: s.logo.name for s in ReviewSource.objects.all()}
+
+    call_command("seed_demo", verbosity=0)
+    second = {s.platform: s.logo.name for s in ReviewSource.objects.all()}
+
+    assert first == second
