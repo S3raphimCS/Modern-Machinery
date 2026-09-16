@@ -1,5 +1,7 @@
 """Тесты отзывов и рейтингов на внешних площадках."""
 
+from decimal import Decimal
+
 import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
@@ -101,11 +103,9 @@ def test_platform_ratings_are_shown_with_links(client, branch):
 
 
 def test_google_is_supported_as_a_platform(client, branch):
-    """Google учтён наравне с остальными — просто заполняется вручную."""
+    """Google учтён, но карточка показывается без оценки — одной ссылкой."""
     ReviewSource.objects.create(
         platform=ReviewSource.Platform.GOOGLE,
-        rating="4.7",
-        reviews_count=9,
         url="https://maps.google.com/x",
     )
 
@@ -115,8 +115,6 @@ def test_google_is_supported_as_a_platform(client, branch):
 def test_inactive_platform_is_hidden(client, branch):
     ReviewSource.objects.create(
         platform=ReviewSource.Platform.GOOGLE,
-        rating="2.0",
-        reviews_count=1,
         url="https://maps.google.com/x",
         is_active=False,
     )
@@ -210,3 +208,49 @@ def test_yandex_widget_is_rendered_when_present(client, branch):
     content = client.get(reverse("content:review-list")).content.decode()
 
     assert "maps-reviews-widget" in content
+
+
+def test_google_rating_is_rejected():
+    """Оценку Google нельзя переносить на свой сайт — только ссылка.
+
+    Поле блокируется в модели, а не в шаблоне: иначе заполнивший его в
+    админке решил бы, что цифра появилась на странице.
+    """
+    source = ReviewSource(
+        platform=ReviewSource.Platform.GOOGLE,
+        rating=Decimal("4.7"),
+        url="https://maps.google.com/?cid=1",
+    )
+
+    with pytest.raises(ValidationError) as excinfo:
+        source.save()
+
+    assert "rating" in excinfo.value.message_dict
+
+
+def test_google_card_is_saved_without_a_rating():
+    source = ReviewSource.objects.create(
+        platform=ReviewSource.Platform.GOOGLE,
+        url="https://maps.google.com/?cid=1",
+    )
+
+    assert source.rating is None
+
+
+def test_google_card_shows_a_link_instead_of_a_number(client, branch):
+    ReviewSource.objects.create(
+        platform=ReviewSource.Platform.GOOGLE,
+        url="https://maps.google.com/?cid=1",
+    )
+    ReviewSource.objects.create(
+        platform=ReviewSource.Platform.GIS,
+        rating=Decimal("4.4"),
+        reviews_count=17,
+        url="https://2gis.ru/khabarovsk/firm/1",
+    )
+
+    body = client.get(reverse("content:review-list")).content.decode()
+
+    assert "4,4" in body or "4.4" in body
+    assert "4,7" not in body and "4.7" not in body
+    assert "смотреть отзывы" in body

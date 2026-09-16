@@ -210,8 +210,15 @@ class ReviewSource(SortableMixin):
         GOOGLE = "google", "Google"
 
     platform = models.CharField("Площадка", max_length=16, choices=Platform.choices, unique=True)
-    rating = models.DecimalField("Рейтинг", max_digits=2, decimal_places=1)
-    reviews_count = models.PositiveIntegerField("Число оценок", default=0)
+    rating = models.DecimalField(
+        "Рейтинг",
+        max_digits=2,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Для Google не заполняется: его оценку переносить на свой сайт нельзя.",
+    )
+    reviews_count = models.PositiveIntegerField("Число оценок", default=0, blank=True)
     url = models.URLField("Ссылка на карточку")
     widget_code = models.TextField(
         "Код виджета",
@@ -229,18 +236,35 @@ class ReviewSource(SortableMixin):
         constraints = [
             models.CheckConstraint(
                 name="reviewsource_rating_in_range",
-                condition=models.Q(rating__gte=0, rating__lte=5),
+                condition=models.Q(rating__isnull=True) | models.Q(rating__gte=0, rating__lte=5),
             )
         ]
 
     def __str__(self) -> str:
-        return f"{self.get_platform_display()}: {self.rating}"
+        return f"{self.get_platform_display()}: {self.rating or 'без оценки'}"
 
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
 
     def clean(self) -> None:
+        """Проверяет оценку и код виджета.
+
+        Оценку Google переносить на свой сайт нельзя: его правила запрещают
+        показывать её за пределами своих продуктов. Карточка остаётся, но
+        только ссылкой, поэтому поле блокируется здесь, а не в шаблоне —
+        иначе заполнивший его в админке решил бы, что цифра появится.
+        """
+        if self.platform == self.Platform.GOOGLE and (self.rating or self.reviews_count):
+            raise ValidationError(
+                {
+                    "rating": "Оценку и число отзывов Google показывать нельзя — "
+                    "оставьте поля пустыми, на странице будет только ссылка."
+                }
+            )
+        self._check_widget_code()
+
+    def _check_widget_code(self) -> None:
         """Проверяет, что в поле виджета именно виджет Яндекса.
 
         Содержимое выводится на публичной странице без экранирования, иначе
@@ -374,8 +398,11 @@ class SiteSettings(models.Model):
 
     @classmethod
     def load(cls) -> "SiteSettings":
-        """Отдаёт настройки, создавая их при первом обращении."""
-        obj = cls.objects.first()
-        if obj is None:
-            obj = cls.objects.create()
+        """Отдаёт настройки, создавая их при первом обращении.
+
+        Создание идёт одним запросом: на пустой таблице параллельные обращения
+        иначе создали бы вторую запись, и проверка синглтона уронила бы
+        страницу ошибкой сервера.
+        """
+        obj, _ = cls.objects.get_or_create(pk=1)
         return obj
