@@ -43,7 +43,7 @@ def leasing(request):
     name = (request.POST.get("name") or "").strip()
     phone = (request.POST.get("phone") or "").strip()
     if not live_recalculation and name and phone and check_lead_throttles(request):
-        create_lead(
+        lead, created = create_lead(
             data={
                 "type": Lead.Type.LEASING,
                 "name": name,
@@ -57,7 +57,11 @@ def leasing(request):
             },
             request=request,
         )
-        context["lead_saved"] = True
+        # Блок подтверждения показывается по наличию заявки, а текст и цель —
+        # по признаку создания: при склейке повтора новой записи нет, но
+        # молчать в ответ нельзя — это выглядит как сломанная кнопка.
+        context["lead"] = lead
+        context["created"] = created
 
     if request.headers.get("HX-Request"):
         return render(request, "financing/partials/result.html", context)

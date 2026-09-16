@@ -49,7 +49,15 @@ def test_sets_retention_deadline(consent):
 
 
 def test_collects_request_metadata(rf, consent):
-    request = rf.post("/zayavka/price/?utm_source=yandex&utm_campaign=khv")
+    # Метки приходят из cookie: форма постится на адрес без параметров, и
+    # прежняя версия этого теста дописывала их прямо в адрес отправки —
+    # ситуация, которой не бывает, из-за чего дефект и не был замечен.
+    from django.core import signing
+
+    from apps.leads.middleware import COOKIE_NAME
+
+    request = rf.post("/zayavka/price/")
+    request.COOKIES[COOKIE_NAME] = signing.dumps({"utm_source": "yandex", "utm_campaign": "khv"})
     request.META["HTTP_REFERER"] = "https://example.com/tehnika/"
     request.META["HTTP_USER_AGENT"] = "Mozilla/5.0"
     request.META["REMOTE_ADDR"] = "203.0.113.9"

@@ -129,10 +129,10 @@
           <a class="mm-btn mm-btn--dark" style="flex:1;" href="tel:{{ site_settings.main_phone|cut:' '|cut:'('|cut:')'|cut:'-' }}">Позвонить</a>
         {% endif %}
         {% if site_settings.socials.whatsapp %}
-          <a class="mm-btn mm-btn--dark" style="flex:1;" href="{{ site_settings.socials.whatsapp }}" rel="nofollow noopener">WhatsApp</a>
+          <a class="mm-btn mm-btn--dark" style="flex:1;" href="{{ site_settings.socials.whatsapp }}" rel="nofollow noopener" data-mm-goal="click_whatsapp">WhatsApp</a>
         {% endif %}
         {% if site_settings.socials.telegram %}
-          <a class="mm-btn mm-btn--dark" style="flex:1;" href="{{ site_settings.socials.telegram }}" rel="nofollow noopener">Telegram</a>
+          <a class="mm-btn mm-btn--dark" style="flex:1;" href="{{ site_settings.socials.telegram }}" rel="nofollow noopener" data-mm-goal="click_telegram">Telegram</a>
         {% endif %}
       </div>
     </div>

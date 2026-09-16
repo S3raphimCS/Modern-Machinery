@@ -1,0 +1,29 @@
+{% load static %}
+{% comment %}
+  Счётчик Яндекс.Метрики. Номер приходит из контекст-процессора уже проверенным:
+  пустая строка означает «не показывать» — счётчик выключен флагом, номер не
+  задан, не состоит из цифр или страницу смотрит сотрудник.
+{% endcomment %}
+{% if metrika_id %}
+  <script nonce="{{ request.csp_nonce }}">
+    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+    m[i].l=1*new Date();
+    for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+    (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+    ym({{ metrika_id }}, "init", {
+      clickmap: true,
+      trackLinks: true,
+      accurateTrackBounce: true,
+      webvisor: {{ metrika_webvisor|yesno:"true,false" }}
+    });
+  </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/{{ metrika_id }}" style="position:absolute;left:-9999px" alt=""></div></noscript>
+  {% comment %}
+    Подключается отсюда, а не из base.html: при выключенном счётчике грузить
+    файл незачем.
+  {% endcomment %}
+  <script nonce="{{ request.csp_nonce }}" src="{% static 'js/metrika.js' %}" defer
+          data-mm-metrika-id="{{ metrika_id }}"></script>
+{% endif %}

@@ -24,10 +24,24 @@ UTM_KEYS = ("utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content
 
 
 def collect_request_meta(request) -> dict:
-    """Собирает технический контекст заявки: источник, UTM, адрес, агент."""
+    """Собирает технический контекст заявки: источник, UTM, адрес, агент.
+
+    Метки берутся из cookie, а не из адреса запроса: форма отправляется на
+    `/zayavka/<тип>/` без параметров, и в самом запросе меток не бывает
+    никогда. Адрес всё же читается — для заявок, созданных из API, где cookie
+    нет, но параметры могут быть переданы напрямую.
+    """
     if request is None:
         return {}
-    utm = {key: request.GET.get(key, "") for key in UTM_KEYS if request.GET.get(key)}
+
+    from apps.leads.middleware import MAX_VALUE_LENGTH, read_marks
+
+    utm = read_marks(request)
+    # Длина режется и здесь: через API метка приходит параметром, минуя
+    # посредника с его ограничением.
+    utm.update(
+        {key: request.GET[key][:MAX_VALUE_LENGTH] for key in UTM_KEYS if request.GET.get(key)}
+    )
     return {
         "source_url": (request.META.get("HTTP_REFERER") or "")[:500],
         "referrer": (request.META.get("HTTP_REFERER") or "")[:500],

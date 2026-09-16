@@ -60,6 +60,16 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 # --- Middleware -----------------------------------------------------------
 
+# --- Аналитика ------------------------------------------------------------
+# Номер счётчика задаётся в админке, в «Настройках сайта». Флаг отвечает только
+# за то, подключать ли счётчик вообще: на стенде разработки его заходы
+# смешались бы с боевой статистикой, а разделить их потом нельзя.
+METRIKA_ENABLED = env.bool("METRIKA_ENABLED", default=False)
+# Вебвизор записывает сессии посетителей. Запись содержимого полей ввода
+# отключается в кабинете Метрики (шаг приёмки в docs/DEPLOY.md) — эта
+# переменная позволяет выключить и сам Вебвизор, не трогая код.
+METRIKA_WEBVISOR = env.bool("METRIKA_WEBVISOR", default=True)
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -70,6 +80,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Метки кампании запоминаются до политики безопасности: ниже стоят только
+    # SEO-middleware, работающие на 404, — им cookie безразлична.
+    "apps.leads.middleware.SourceTrackingMiddleware",
     "apps.core.middleware.ContentSecurityPolicyMiddleware",
     # Оба SEO-middleware работают только на ответах 404, поэтому стоят последними.
     #

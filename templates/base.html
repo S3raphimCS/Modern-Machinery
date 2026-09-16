@@ -13,6 +13,7 @@
   {% endcomment %}
   {% block canonical %}<link rel="canonical" href="{{ canonical_url|default:request.build_absolute_uri }}">{% endblock %}
   {% block robots %}{% endblock %}
+  {% include "content/partials/metrika.html" %}
   <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
   <script src="{% static 'js/htmx.min.js' %}" defer></script>
@@ -97,8 +98,8 @@
         <div class="mm-footer__title">Контакты</div>
         {% if site_settings.main_phone %}<a href="tel:{{ site_settings.main_phone|cut:' '|cut:'('|cut:')'|cut:'-' }}">{{ site_settings.main_phone }}</a>{% endif %}
         {% if site_settings.main_email %}<a href="mailto:{{ site_settings.main_email }}">{{ site_settings.main_email }}</a>{% endif %}
-        {% if site_settings.socials.whatsapp %}<a href="{{ site_settings.socials.whatsapp }}" rel="nofollow noopener">WhatsApp</a>{% endif %}
-        {% if site_settings.socials.telegram %}<a href="{{ site_settings.socials.telegram }}" rel="nofollow noopener">Telegram</a>{% endif %}
+        {% if site_settings.socials.whatsapp %}<a href="{{ site_settings.socials.whatsapp }}" rel="nofollow noopener" data-mm-goal="click_whatsapp">WhatsApp</a>{% endif %}
+        {% if site_settings.socials.telegram %}<a href="{{ site_settings.socials.telegram }}" rel="nofollow noopener" data-mm-goal="click_telegram">Telegram</a>{% endif %}
       </div>
     </div>
     <div class="mm-footer__bottom">
@@ -127,10 +128,6 @@
   <button class="mm-btn mm-btn--dark" type="button" data-mm-compare-clear>Очистить</button>
 </div>
 
-{% if site_settings.metrika_id %}
-  {# Счётчик переносится со старого сайта: терять накопленную статистику нельзя. #}
-  <noscript><div><img src="https://mc.yandex.ru/watch/{{ site_settings.metrika_id }}" style="position:absolute;left:-9999px" alt=""></div></noscript>
-{% endif %}
 {% block body_extra %}{% endblock %}
 </body>
 </html>

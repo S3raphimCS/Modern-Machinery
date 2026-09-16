@@ -26,9 +26,11 @@
     </dl>
   </div>
 
-  {% if lead_saved %}
+  {% if lead %}
+    {% if created %}<span data-mm-goal-reached="lead_tco" hidden></span>{% endif %}
     <div class="mm-form__success">
-      Заявка принята — менеджер пришлёт детальный расчёт.
+      Заявка принята{% if not created %} — мы уже получили её ранее{% endif %}.
+      Менеджер пришлёт детальный расчёт.
     </div>
   {% endif %}
 

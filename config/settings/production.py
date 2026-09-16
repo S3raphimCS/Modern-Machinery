@@ -35,3 +35,7 @@ if SENTRY_DSN:  # pragma: no cover
         traces_sample_rate=env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.1),
         send_default_pii=False,
     )
+
+# На проде счётчик нужен всегда. Выключается явной переменной окружения —
+# например на предпроде с копией боевой базы.
+METRIKA_ENABLED = env.bool("METRIKA_ENABLED", default=True)

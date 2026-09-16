@@ -134,6 +134,12 @@ def purge_expired_leads() -> int:
         lead.ip_address = None
         lead.user_agent = ""
         lead.payload = {}
+        # Метки источника и адреса — тоже персональные данные: в `utm` лежит
+        # `yclid`, идентификатор клика, который Яндекс связывает с человеком, и
+        # тот же параметр оседает в адресе страницы, с которой ушла форма.
+        lead.utm = {}
+        lead.source_url = ""
+        lead.referrer = ""
         lead.is_anonymized = True
         # Вложения удаляются вместе с полями: документы клиента — такие же
         # персональные данные, и оставлять их на диске после срока нельзя.
@@ -150,6 +156,9 @@ def purge_expired_leads() -> int:
                 "ip_address",
                 "user_agent",
                 "payload",
+                "utm",
+                "source_url",
+                "referrer",
                 "is_anonymized",
                 "updated_at",
             ]

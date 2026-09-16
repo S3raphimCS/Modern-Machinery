@@ -1,5 +1,6 @@
 """Контентные сущности: страницы, новости, вакансии, меню, настройки сайта."""
 
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import models
@@ -12,6 +13,10 @@ from apps.core.models import (
     SortableMixin,
     TimeStampedModel,
 )
+
+# Ключ объявлен рядом с моделью, а не в контекст-процессоре: сбрасывает кеш
+# сама модель при сохранении, а процессор только читает.
+SETTINGS_CACHE_KEY = "content:settings:v1"
 
 
 class Page(MP_Node, SeoMixin, PublishableMixin, TimeStampedModel):
@@ -388,6 +393,9 @@ class SiteSettings(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+        # Без сброса настройки жили бы в кеше ещё десять минут, и внесённый в
+        # админке номер счётчика выглядел бы как «не работает».
+        cache.delete(SETTINGS_CACHE_KEY)
 
     def clean(self) -> None:
         # Синглтон: вторая запись сделала бы поведение сайта зависящим от того,

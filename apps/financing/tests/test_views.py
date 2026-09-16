@@ -108,7 +108,7 @@ def test_contacts_turn_calculation_into_a_lead(client, branch, terms, consent):
     assert lead.type == Lead.Type.LEASING
     assert lead.payload["input"]["price"] == 18_000_000
     assert lead.payload["result"]["monthly_payment"] == 484_000
-    assert response.context["lead_saved"] is True
+    assert response.context["created"] is True
 
 
 def test_terms_shown_in_page(client, branch, terms):
@@ -193,3 +193,40 @@ def test_placeholder_does_not_point_sideways(client, branch, terms):
     body = client.get(reverse("financing:leasing")).content.decode()
 
     assert "слева" not in body
+
+
+def test_lead_from_the_calculator_reports_a_goal(client, branch, terms, consent):
+    response = client.post(
+        reverse("financing:leasing"),
+        {**CALC_INPUT, "name": "Иван Петров", "phone": "+7 914 771-05-42"},
+    )
+
+    assert 'data-mm-goal-reached="lead_leasing"' in response.content.decode()
+
+
+def test_repeat_calculation_is_not_a_second_conversion(client, branch, terms, consent):
+    """Склейка повтора: заявки новой нет, значит и конверсии нет.
+
+    Заодно проверяется, что «заявка принята» больше не врёт — раньше вью
+    выбрасывал признак создания и ставил сообщение безусловно.
+    """
+    data = {**CALC_INPUT, "name": "Иван Петров", "phone": "+7 914 771-05-42"}
+    client.post(reverse("financing:leasing"), data)
+
+    response = client.post(reverse("financing:leasing"), data)
+    body = response.content.decode()
+
+    assert Lead.objects.count() == 1
+    assert "data-mm-goal-reached" not in body
+    assert "Заявка принята" in body
+    assert "мы уже получили её ранее" in body
+
+
+def test_live_recalculation_reports_no_goal(client, branch, terms, consent):
+    """Пересчёт подменяет тот же партиал по десять раз за визит."""
+    response = client.post(
+        reverse("financing:leasing"),
+        {**CALC_INPUT, "action": "calc", "name": "Иван Петров", "phone": "+7 914 771-05-42"},
+    )
+
+    assert "data-mm-goal-reached" not in response.content.decode()

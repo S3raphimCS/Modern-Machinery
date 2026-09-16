@@ -109,3 +109,26 @@ def test_purge_is_idempotent():
 @override_settings(LEADS_FALLBACK_EMAIL="office@modernmachinery.example")
 def test_notification_for_missing_lead_is_safe():
     assert send_lead_notification(999999, ["office@modernmachinery.example"]) == "missing"
+
+
+def test_anonymisation_erases_source_marks(consent, department):
+    """В метках лежит `yclid` — идентификатор клика, связанный с человеком.
+
+    Тот же параметр оседает в адресе страницы, с которой ушла форма.
+    """
+    lead = LeadFactory()
+    Lead.objects.filter(pk=lead.pk).update(
+        utm={"utm_source": "yandex", "yclid": "42"},
+        source_url="https://example.com/tehnika/?yclid=42",
+        referrer="https://example.com/tehnika/?yclid=42",
+        purge_after=timezone.now().date() - datetime.timedelta(days=1),
+    )
+
+    purge_expired_leads()
+
+    # Перечитывается из базы: присваивание без `update_fields` до базы не
+    # доедет, а проверка объекта в памяти этого не заметит.
+    lead.refresh_from_db()
+    assert lead.utm == {}
+    assert lead.source_url == ""
+    assert lead.referrer == ""

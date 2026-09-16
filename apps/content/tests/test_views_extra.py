@@ -56,7 +56,7 @@ def test_calculation_with_contacts_creates_lead(client, branch, consent):
     assert lead.type == Lead.Type.TCO
     assert lead.payload["result"]["cost_per_hour"] > 0
     assert lead.payload["input"]["hours_per_year"] == 1800
-    assert response.context["lead_saved"] is True
+    assert response.context["created"] is True
 
 
 def test_invalid_calculation_returns_errors(client, branch):
@@ -268,3 +268,26 @@ def test_form_units_match_fields():
     from apps.leads.forms import TcoForm
 
     assert set(TcoForm.UNITS) == set(TcoForm().fields)
+
+
+def test_tco_lead_reports_a_goal(client, branch, consent, department):
+    response = client.post(
+        "/kalkulyator/", {**TCO_INPUT, "name": "Иванов", "phone": "+7 914 000-11-22"}
+    )
+
+    assert 'data-mm-goal-reached="lead_tco"' in response.content.decode()
+
+
+def test_repeat_tco_lead_is_not_a_second_conversion(client, branch, consent, department):
+    """И сообщение «заявка принята» при склейке больше не появляется."""
+    data = {**TCO_INPUT, "name": "Иванов", "phone": "+7 914 000-11-22"}
+    client.post("/kalkulyator/", data)
+
+    body = client.post("/kalkulyator/", data).content.decode()
+
+    assert Lead.objects.count() == 1
+    assert "data-mm-goal-reached" not in body
+    # Подтверждение обязано быть и при повторе: молчание в ответ выглядит как
+    # сломанная кнопка.
+    assert "Заявка принята" in body
+    assert "мы уже получили её ранее" in body
