@@ -102,24 +102,16 @@ def test_platform_ratings_are_shown_with_links(client, branch):
     assert "https://2gis.ru/khabarovsk" in content
 
 
-def test_google_is_supported_as_a_platform(client, branch):
-    """Google учтён, но карточка показывается без оценки — одной ссылкой."""
-    ReviewSource.objects.create(
-        platform=ReviewSource.Platform.GOOGLE,
-        url="https://maps.google.com/x",
-    )
-
-    assert "Google" in client.get(reverse("content:review-list")).content.decode()
-
-
 def test_inactive_platform_is_hidden(client, branch):
     ReviewSource.objects.create(
-        platform=ReviewSource.Platform.GOOGLE,
-        url="https://maps.google.com/x",
+        platform=ReviewSource.Platform.GIS,
+        rating=Decimal("2.0"),
+        reviews_count=1,
+        url="https://2gis.ru/khabarovsk/firm/1",
         is_active=False,
     )
 
-    assert "Google" not in client.get(reverse("content:review-list")).content.decode()
+    assert "2ГИС" not in client.get(reverse("content:review-list")).content.decode()
 
 
 def test_rating_is_not_localised_in_markup(client, branch):
@@ -188,7 +180,7 @@ def test_valid_widget_code_is_accepted():
 
 
 def test_empty_widget_code_is_allowed():
-    """Для 2ГИС и Google виджета нет — поле просто пустое."""
+    """У 2ГИС виджета отзывов нет — поле просто пустое."""
     source = ReviewSource.objects.create(
         platform="2gis", rating="4.4", url="https://2gis.ru/khabarovsk"
     )
@@ -210,47 +202,25 @@ def test_yandex_widget_is_rendered_when_present(client, branch):
     assert "maps-reviews-widget" in content
 
 
-def test_google_rating_is_rejected():
-    """Оценку Google нельзя переносить на свой сайт — только ссылка.
+def test_google_is_not_an_option():
+    """У хабаровского филиала нет карточки с отзывами в Google.
 
-    Поле блокируется в модели, а не в шаблоне: иначе заполнивший его в
-    админке решил бы, что цифра появилась на странице.
+    Площадка убрана из списка, чтобы её нельзя было завести в админке: её
+    оценку всё равно нельзя было бы показать.
     """
+    assert "google" not in dict(ReviewSource.Platform.choices)
+
+
+def test_widget_belongs_to_yandex_only():
+    """Виджет отзывов есть только у Яндекса — у 2ГИС его быть не может."""
     source = ReviewSource(
-        platform=ReviewSource.Platform.GOOGLE,
-        rating=Decimal("4.7"),
-        url="https://maps.google.com/?cid=1",
+        platform=ReviewSource.Platform.GIS,
+        rating=Decimal("4.4"),
+        url="https://2gis.ru/khabarovsk/firm/1",
+        widget_code='<iframe src="https://yandex.ru/maps-reviews-widget/1"></iframe>',
     )
 
     with pytest.raises(ValidationError) as excinfo:
         source.save()
 
-    assert "rating" in excinfo.value.message_dict
-
-
-def test_google_card_is_saved_without_a_rating():
-    source = ReviewSource.objects.create(
-        platform=ReviewSource.Platform.GOOGLE,
-        url="https://maps.google.com/?cid=1",
-    )
-
-    assert source.rating is None
-
-
-def test_google_card_shows_a_link_instead_of_a_number(client, branch):
-    ReviewSource.objects.create(
-        platform=ReviewSource.Platform.GOOGLE,
-        url="https://maps.google.com/?cid=1",
-    )
-    ReviewSource.objects.create(
-        platform=ReviewSource.Platform.GIS,
-        rating=Decimal("4.4"),
-        reviews_count=17,
-        url="https://2gis.ru/khabarovsk/firm/1",
-    )
-
-    body = client.get(reverse("content:review-list")).content.decode()
-
-    assert "4,4" in body or "4.4" in body
-    assert "4,7" not in body and "4.7" not in body
-    assert "смотреть отзывы" in body
+    assert "widget_code" in excinfo.value.message_dict

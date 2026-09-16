@@ -33,13 +33,8 @@
           <a class="mm-sources__item" href="{{ source.url }}"
              target="_blank" rel="noopener nofollow">
             <div class="mm-sources__platform">{{ source.get_platform_display }}</div>
-            {% if source.rating %}
-              <div class="mm-sources__rating">{{ source.rating|unlocalize }}</div>
-              <div class="mm-sources__count">{{ source.reviews_count }} оценок</div>
-            {% else %}
-              {# Оценку Google переносить к себе нельзя — только ссылка. #}
-              <div class="mm-sources__count">смотреть отзывы</div>
-            {% endif %}
+            <div class="mm-sources__rating">{{ source.rating|unlocalize }}</div>
+            <div class="mm-sources__count">{{ source.reviews_count }} оценок</div>
           </a>
         {% endfor %}
       </div>

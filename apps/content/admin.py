@@ -98,7 +98,7 @@ class ReviewSourceAdmin(admin.ModelAdmin):
             None,
             {
                 "fields": ["platform", "rating", "reviews_count", "url", "is_active", "sort_order"],
-                "description": "Цифры обновляются вручную: 2ГИС и Google не отдают "
+                "description": "Цифры обновляются вручную: 2ГИС не отдаёт "
                 "отзывы через публичный API. Меняется такое раз в "
                 "квартал.",
             },

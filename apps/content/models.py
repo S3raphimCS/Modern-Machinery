@@ -200,25 +200,18 @@ class ReviewSource(SortableMixin):
     отзывы нельзя, а переносить их оценки в свою микроразметку прямо
     запрещено правилами поисковиков.
 
-    Заполняется вручную: 2ГИС и Google не отдают отзывы через публичный API,
-    а меняется такое раз в квартал.
+    Заполняется вручную: 2ГИС не отдаёт отзывы через публичный API, а оценка
+    меняется раз в квартал. У Яндекса тексты подтягивает его собственный
+    виджет — он же их и обновляет.
     """
 
     class Platform(models.TextChoices):
         YANDEX = "yandex", "Яндекс Карты"
         GIS = "2gis", "2ГИС"
-        GOOGLE = "google", "Google"
 
     platform = models.CharField("Площадка", max_length=16, choices=Platform.choices, unique=True)
-    rating = models.DecimalField(
-        "Рейтинг",
-        max_digits=2,
-        decimal_places=1,
-        null=True,
-        blank=True,
-        help_text="Для Google не заполняется: его оценку переносить на свой сайт нельзя.",
-    )
-    reviews_count = models.PositiveIntegerField("Число оценок", default=0, blank=True)
+    rating = models.DecimalField("Рейтинг", max_digits=2, decimal_places=1)
+    reviews_count = models.PositiveIntegerField("Число оценок", default=0)
     url = models.URLField("Ссылка на карточку")
     widget_code = models.TextField(
         "Код виджета",
@@ -236,35 +229,18 @@ class ReviewSource(SortableMixin):
         constraints = [
             models.CheckConstraint(
                 name="reviewsource_rating_in_range",
-                condition=models.Q(rating__isnull=True) | models.Q(rating__gte=0, rating__lte=5),
+                condition=models.Q(rating__gte=0, rating__lte=5),
             )
         ]
 
     def __str__(self) -> str:
-        return f"{self.get_platform_display()}: {self.rating or 'без оценки'}"
+        return f"{self.get_platform_display()}: {self.rating}"
 
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
 
     def clean(self) -> None:
-        """Проверяет оценку и код виджета.
-
-        Оценку Google переносить на свой сайт нельзя: его правила запрещают
-        показывать её за пределами своих продуктов. Карточка остаётся, но
-        только ссылкой, поэтому поле блокируется здесь, а не в шаблоне —
-        иначе заполнивший его в админке решил бы, что цифра появится.
-        """
-        if self.platform == self.Platform.GOOGLE and (self.rating or self.reviews_count):
-            raise ValidationError(
-                {
-                    "rating": "Оценку и число отзывов Google показывать нельзя — "
-                    "оставьте поля пустыми, на странице будет только ссылка."
-                }
-            )
-        self._check_widget_code()
-
-    def _check_widget_code(self) -> None:
         """Проверяет, что в поле виджета именно виджет Яндекса.
 
         Содержимое выводится на публичной странице без экранирования, иначе
@@ -275,6 +251,11 @@ class ReviewSource(SortableMixin):
         code = (self.widget_code or "").strip()
         if not code:
             return
+
+        if self.platform != self.Platform.YANDEX:
+            raise ValidationError(
+                {"widget_code": "Виджет отзывов есть только у Яндекса — оставьте поле пустым."}
+            )
 
         allowed_start = "<iframe"
         allowed_src = "https://yandex.ru/maps-reviews-widget/"
