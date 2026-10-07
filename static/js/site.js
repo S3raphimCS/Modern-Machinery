@@ -29,6 +29,57 @@
     if (root) root.innerHTML = "";
   }
 
+  // Окно о демонстрационном характере сайта. Показывается один раз на браузер:
+  // после закрытия ставим флаг в localStorage. Если localStorage недоступен
+  // (приватный режим, запрет) — окно всё равно покажется и закроется, просто
+  // в следующий раз появится снова.
+  (function initDisclaimer() {
+    var SEEN_KEY = "mm.disclaimer.v1";
+    var dialog = document.getElementById("mm-disclaimer");
+    if (!dialog) return;
+
+    function wasSeen() {
+      try {
+        return window.localStorage.getItem(SEEN_KEY) === "1";
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function markSeen() {
+      try {
+        window.localStorage.setItem(SEEN_KEY, "1");
+      } catch (error) {
+        /* localStorage недоступен — просто закрываем окно без запоминания. */
+      }
+    }
+
+    function closeDisclaimer() {
+      if (dialog.hidden) return;
+      dialog.hidden = true;
+      document.body.classList.remove("mm-no-scroll");
+      markSeen();
+    }
+
+    if (wasSeen()) return;
+
+    dialog.hidden = false;
+    document.body.classList.add("mm-no-scroll");
+    var action = dialog.querySelector(".mm-disclaimer__action");
+    if (action) action.focus();
+
+    // Закрытие: крестик и кнопка «Понятно» (data-mm-disclaimer-close),
+    // клик по тёмной подложке и клавиша Esc.
+    dialog.addEventListener("click", function (event) {
+      if (event.target === dialog || event.target.closest("[data-mm-disclaimer-close]")) {
+        closeDisclaimer();
+      }
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") closeDisclaimer();
+    });
+  })();
+
   // Табы карточки техники: «Характеристики», «Комплектация», «Документы».
   document.addEventListener("click", function (event) {
     var button = event.target.closest("[data-mm-tab]");

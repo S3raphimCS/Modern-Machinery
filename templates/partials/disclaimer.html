@@ -1,0 +1,22 @@
+{% comment %}
+  Окно о демонстрационном характере сайта. Показывается один раз на браузер
+  (флаг в localStorage ставит site.js). По умолчанию скрыто через hidden, чтобы
+  контент страницы не «моргал» до срабатывания скрипта. Если JS выключен —
+  окно просто не появится, сайт при этом полностью работает.
+{% endcomment %}
+<div class="mm-modal mm-disclaimer" id="mm-disclaimer" role="dialog" aria-modal="true"
+     aria-labelledby="mm-disclaimer-title" hidden>
+  <div class="mm-modal__box mm-disclaimer__box">
+    <button class="mm-modal__close" type="button" data-mm-disclaimer-close aria-label="Закрыть">×</button>
+    <div class="mm-disclaimer__badge">Демонстрационная версия</div>
+    <h2 class="mm-modal__title mm-disclaimer__title" id="mm-disclaimer-title">Это демонстрационный сайт</h2>
+    <p class="mm-disclaimer__text">
+      Сайт создан для демонстрации и не предоставляет реальных услуг.
+      За настоящими товарами и услугами Modern Machinery перейдите на официальный сайт
+      <a href="https://www.modernmachinery.ru" target="_blank"
+         rel="noopener noreferrer nofollow">www.modernmachinery.ru</a>.
+    </p>
+    <button class="mm-btn mm-btn--primary mm-btn--block mm-disclaimer__action"
+            type="button" data-mm-disclaimer-close autofocus>Понятно, продолжить</button>
+  </div>
+</div>
